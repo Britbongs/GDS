@@ -123,7 +123,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GDS.cpp" />
+    <ClCompile Include="Heatmap.cpp" />
     <ClCompile Include="src\GravitationalController.cpp" />
     <ClCompile Include="src\LevelSetup.cpp" />
     <ClCompile Include="src\PlayerController.cpp" />
@@ -135,6 +135,10 @@
     <ClInclude Include="include\LevelSetup.h" />
     <ClInclude Include="include\PlayerController.h" />
     <ClInclude Include="include\Projectiles.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\frag.glsl" />
+    <None Include="res\vert.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

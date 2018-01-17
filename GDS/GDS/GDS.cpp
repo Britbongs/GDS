@@ -10,7 +10,12 @@ using namespace std;
 using namespace Krawler;
 
 
+#ifndef _DEBUG
+#include <Windows.h>
+int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszArgument, int nCmdShow)
+#else
 int main(void)
+#endif
 {
 	KScene* mainScene = new KScene(KTEXT("play scene"), SCENE_BOUNDS);
 

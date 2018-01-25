@@ -102,7 +102,6 @@ void LevelSetup::tick()
 		m_bShowMap = !m_bShowMap;
 		if (m_bShowMap)
 		{
-			//bool m_bIsShaderActive = false;
 			m_tiledMap.setShader(m_gravityMapShader);
 		}
 		else

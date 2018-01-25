@@ -6,6 +6,8 @@
 #include <KEntity.h>
 
 
+#include <mutex>
+
 class StaticPlanetController : public Krawler::KComponentBase
 {
 public:
@@ -36,7 +38,6 @@ private:
 	void assembleList();
 
 	std::vector<Krawler::KEntity*> m_gravityInteractingEntities; //entities which can be influenced by gravity
-
 };
 
 #endif

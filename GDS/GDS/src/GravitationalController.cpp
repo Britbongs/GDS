@@ -69,10 +69,12 @@ void GravitationalController::fixedTick()
 
 			Vec2f directionAtoB = centrePosB - centrePosA;
 			directionAtoB *= metresToPixels;
+
 			float force = GRAVITATIONAL_CONSTANT*massA * massB / GetSquareLength(directionAtoB);
+			force *= GRATIVTY_BALANCE;
+
 			directionAtoB = Normalise(directionAtoB);
 			directionAtoB *= force;
-			directionAtoB *= GRATIVTY_BALANCE;
 
 			pPhysA->applyForce(directionAtoB);
 			pPhysB->applyForce(-directionAtoB);
@@ -84,10 +86,9 @@ void GravitationalController::fixedTick()
 void GravitationalController::assembleList()
 {
 	auto pCurrentScene = KApplication::getApp()->getCurrentScene();
-
 	m_gravityInteractingEntities.clear();
 	KEntity* pEntityList = pCurrentScene->getEntitiyList();
-	for (int i = 0; i < pCurrentScene->getNumbrOfEntitiesAllocated(); ++i)
+	for (int32 i = 0; i < (signed)pCurrentScene->getNumbrOfEntitiesAllocated(); ++i)
 	{
 		KEntity* pEntity = &pEntityList[i];
 		if (!pEntity->isEntitiyInUse())

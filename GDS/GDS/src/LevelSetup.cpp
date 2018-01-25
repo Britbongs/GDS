@@ -10,15 +10,19 @@
 #include <Components\KCCircleCollider.h>
 #include <Components\KCBoxCollider.h>
 
+
 #include "GravitationalController.h"
 #include "PlayerController.h"
 #include "Projectiles.h"
+#include "PlanetTarget.h"
 
 using namespace Krawler;
 using namespace Krawler::Input;
 using namespace Krawler::Components;
+using namespace Krawler::TiledMap;
 
 #define TEST_BOX_COUNT 20
+#define GRID_NODE_SIZE 1
 
 /*-- Level Setup --*/
 
@@ -30,6 +34,28 @@ LevelSetup::LevelSetup(KEntity * pEntity)
 KInitStatus LevelSetup::init()
 {
 	getEntity()->addComponent(new GravitationalController(getEntity()));
+	Vec2f screenBounds(KApplication::getApp()->getWindowSize());
+
+	//add background to scene
+	KAssetLoader::getAssetLoader().setRootFolder(KTEXT("res\\"));
+	m_pBackground = KAssetLoader::getAssetLoader().loadTexture(KTEXT("space2.png"));
+
+	if (!sf::Shader::isAvailable())
+	{
+		KPrintf(L"Eror!! SHADERS NOT ALLOWED ON THIS MACHINE!\n");
+		return KInitStatus::Failure;
+	}
+
+	m_gravityMapShader = KAssetLoader::getAssetLoader().loadShader(KTEXT("mapVert.glsl"), KTEXT("mapFrag.glsl"));
+	m_defaultBackgroundShader = KAssetLoader::getAssetLoader().loadShader(KTEXT("defaultVert.glsl"), KTEXT("defaultFrag.glsl"));
+
+	Vec2i gridDim((int32)(screenBounds.x / (float)GRID_NODE_SIZE), (int32)(screenBounds.y / (float)GRID_NODE_SIZE));
+	int* const tileIDs = new int[gridDim.x * gridDim.y]{ 0 };
+	m_tiledMap.setTexture(L"space2.png");
+	m_tiledMap.setupTiledMapFromArray(tileIDs, gridDim, Vec2i(GRID_NODE_SIZE, GRID_NODE_SIZE));
+	m_tiledMap.setShader(m_defaultBackgroundShader);
+	KApplication::getApp()->getRenderer()->setActiveTiledMap(&m_tiledMap);
+	//setup physics world properties
 	Physics::KPhysicsWorldProperties worldProperties;
 	worldProperties.gravity = Vec2f(0.0f, 0.f);
 	worldProperties.metresToPixels = METRES_TO_PIXELS;
@@ -46,7 +72,6 @@ KInitStatus LevelSetup::init()
 	KINIT_CHECK(createExtraPlanets());
 
 
-	m_p8BallTexture = KAssetLoader::getAssetLoader().loadTexture(L"8ball.png");
 	return KInitStatus::Success;
 }
 
@@ -66,11 +91,51 @@ void LevelSetup::onEnterScene()
 
 void LevelSetup::tick()
 {
+	static float modifier = 1.0f;
 	if (KInput::MouseJustPressed(KMouseButton::Left))
 	{
 		KPrintf(KTEXT("%f-%f"), KInput::GetMouseWorldPosition().x, KInput::GetMouseWorldPosition().y);
-
 	}
+
+	if (KInput::JustPressed(KKey::Tab))
+	{
+		m_bShowMap = !m_bShowMap;
+		if (m_bShowMap)
+		{
+			m_tiledMap.setShader(m_gravityMapShader);
+		}
+		else
+		{
+			m_tiledMap.setShader(m_defaultBackgroundShader);
+		}
+	}
+#ifdef _DEBUG
+	if (KInput::JustPressed(KKey::R))
+	{
+		m_gravityMapShader->loadFromFile("res\\mapVert.glsl", "res\\mapFrag.glsl");
+	}
+#endif
+	if (KInput::Pressed(KKey::Escape))
+	{
+		KApplication::getApp()->closeApplication();
+	}
+
+	//PASSING SHADER PARAMETERS
+	std::vector<Vec2f>centres;
+	std::vector<sf::Glsl::Vec4> colours;
+	for (auto& extra : m_extraPlanets)
+	{
+		centres.push_back(extra->getComponent<KCCircleCollider>()->getCentrePosition());
+	}
+	centres.push_back(m_pPlayerPlanet->getComponent<KCCircleCollider>()->getCentrePosition());
+
+	for (int32 i = 0; i <= EXTRA_PLANET_COUNT; ++i)
+	{
+		colours.push_back(sf::Glsl::Vec4((float)(m_planetCols[i].r) / 256.0f, (float)(m_planetCols[i].g) / 256.0f, (float)(m_planetCols[i].b) / 256.0f, 1.0f));
+	}
+
+	m_gravityMapShader->setUniformArray("planetPos", &centres[0], centres.size());
+	m_gravityMapShader->setUniformArray("colours", &colours[0], EXTRA_PLANET_COUNT + 1);
 }
 
 KInitStatus LevelSetup::setupPlayerEntities()
@@ -166,10 +231,17 @@ KInitStatus LevelSetup::createExtraPlanets()
 			KPrintf(KTEXT("Unable to add extra planets to scene!\n"));
 			return KInitStatus::Failure;
 		}
+
 		m_extraPlanets[i]->addComponent(new KCPhysicsBody(m_extraPlanets[i], planet));
 		m_extraPlanets[i]->addComponent(new KCCircleCollider(m_extraPlanets[i], PLANET_RADIUS));
 		m_extraPlanets[i]->addComponent(new KCSprite(m_extraPlanets[i], Vec2f(2 * PLANET_RADIUS, 2 * PLANET_RADIUS)));
 		m_extraPlanets[i]->addComponent(new StaticPlanetController(m_extraPlanets[i], Vec2f(0.0f, 0.0f)));
+	}
+
+	for (int32 i = 0; i < TARGET_COUNT; ++i)
+	{
+		KEntity* pTarget = currentScene->addEntityToScene();
+		pTarget->addComponent(new PlanetTarget(pTarget, m_extraPlanets[i % EXTRA_PLANET_COUNT]));
 	}
 
 	return KInitStatus::Success;
@@ -187,12 +259,12 @@ void LevelSetup::setupPlanetPositionsAndTextures()
 		Vec2f pos;
 		pos.x = Maths::RandFloat(0.0f, screenBounds.x);
 		pos.y = Maths::RandFloat(0.0f, screenBounds.y);
+		pPlanet->getComponent<KCTransform>()->setOrigin(PLANET_RADIUS, PLANET_RADIUS);
 		pPlanet->getComponent<KCTransform>()->setTranslation(pos);
 		KCSprite* const pSprite = pPlanet->getComponent<KCSprite>();
 
 		pSprite->setTexture(m_pPlanetTexture);
 		pSprite->setTextureRect(Recti(256, 256, 256, 256));
-
 	}
 
 	m_extraPlanets[0]->getComponent<KCTransform>()->setTranslation(Vec2f(134, 97));

@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{91F94C7E-C42A-40DA-889D-2573BBF42709}</ProjectGuid>
     <RootNamespace>GDS</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -79,6 +79,7 @@
     <Link>
       <AdditionalLibraryDirectories>C:\SFML-2.4.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;freetype.lib;jpeg.lib;winmm.lib;gdi32.lib;sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio-d.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -102,6 +103,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>C:\SFML-2.4.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;freetype.lib;jpeg.lib;winmm.lib;gdi32.lib;sfml-graphics.lib;sfml-window.lib;sfml-system.lib;sfml-audio.lib;openal32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -124,6 +126,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GDS.cpp" />
+    <ClCompile Include="src\PlanetTarget.cpp" />
     <ClCompile Include="src\GravitationalController.cpp" />
     <ClCompile Include="src\LevelSetup.cpp" />
     <ClCompile Include="src\PlayerController.cpp" />
@@ -133,8 +136,15 @@
     <ClInclude Include="include\GameBlackboard.h" />
     <ClInclude Include="include\GravitationalController.h" />
     <ClInclude Include="include\LevelSetup.h" />
+    <ClInclude Include="include\PlanetTarget.h" />
     <ClInclude Include="include\PlayerController.h" />
     <ClInclude Include="include\Projectiles.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\DefaultFrag.glsl" />
+    <None Include="res\defaultVert.glsl" />
+    <None Include="res\mapFrag.glsl" />
+    <None Include="res\mapVert.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

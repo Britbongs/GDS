@@ -19,22 +19,22 @@ constexpr float MAX_PLANET_DENSITY = 1.0e26f / (32000.0f*32000.0f); //kg/m^3
 
 const static float GRAVITATIONAL_CONSTANT = 6.67e-11f;
 
-const static float GRATIVTY_BALANCE = 4.0f;
+const static float GRATIVTY_BALANCE = 3.2f;
 
 //projectile 
-const static Krawler::uint32 CACHED_PROJECTILE_COUNT = 10;
+const static Krawler::uint32 CACHED_PROJECTILE_COUNT = 15;
 
 const static float PROJECTILE_MASS = 5.9e4f;
 
 const static float PROJECTILE_RADIUS = 8.0f;
 
-const static float KICKOFF_FORCE = 1.9e12f;
+const static float KICKOFF_FORCE = 1.4e12f;
 
-const static float PROJECTILE_ALIVE_TIME = 10.0f;
+const static float PROJECTILE_ALIVE_TIME = 20.0f;
 
 //targets count 
-
-constexpr static float TARGET_COUNT = EXTRA_PLANET_COUNT * 1.0f;
+constexpr static float TARGET_COUNT = EXTRA_PLANET_COUNT * 3.0f;
 
 const static float TARGET_SIZE = 16;
+
 #endif

@@ -30,10 +30,10 @@ KInitStatus Projectile::init()
 	pEntity->getComponent<KCTransform>()->setOrigin(Vec2f(PROJECTILE_RADIUS, PROJECTILE_RADIUS));
 	KAssetLoader& rAsset = KAssetLoader::getAssetLoader();
 
-	m_p8ballTexture = rAsset.loadTexture(KTEXT("8ball.png"));
+	m_p8ballTexture = rAsset.loadTexture(KTEXT("asteroid.png"));
 	if (!m_p8ballTexture)
 	{
-		KPrintf(KTEXT("Missing 8ball texture for projectile!\n"));
+		KPrintf(KTEXT("Missing asteroid texture for projectile!\n"));
 		return KInitStatus::MissingResource;
 	}
 
@@ -63,6 +63,30 @@ void Projectile::resetProjectile()
 	KCPhysicsBody* pPhysBody = getEntity()->getComponent<KCPhysicsBody>();
 	pPhysBody->setVelocity(Vec2f(0.0f, 0.0f));
 	pPhysBody->applyForce(-pPhysBody->getForce());
+}
+
+void Projectile::handleCollision(const Krawler::KCollisionDetectionData & data)
+{
+	KEntity *pCollidedWith = nullptr;
+
+	if (data.entityA == getEntity())
+	{
+		pCollidedWith = data.entityB;
+	}
+	else
+	{
+		pCollidedWith = data.entityA;
+	}
+
+	const std::wstring& entityName = pCollidedWith->getEntityTag();
+
+	uint32 findResult = entityName.find(KTEXT("projectile"));
+	if (findResult != std::wstring::npos)
+	{
+		return;
+	}
+
+	resetProjectile();
 }
 
 /* -- Projectile Handler -- */

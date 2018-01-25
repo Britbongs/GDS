@@ -38,16 +38,22 @@ KInitStatus LevelSetup::init()
 
 	//add background to scene
 	KAssetLoader::getAssetLoader().setRootFolder(KTEXT("res\\"));
-	m_p8BallTexture = KAssetLoader::getAssetLoader().loadTexture(KTEXT("8ball.png"));
 	m_pBackground = KAssetLoader::getAssetLoader().loadTexture(KTEXT("space2.png"));
 
-	m_pShader = KAssetLoader::getAssetLoader().loadShader(KTEXT("vert.glsl"), KTEXT("frag.glsl"));
+	if (!sf::Shader::isAvailable())
+	{
+		KPrintf(L"Eror!! SHADERS NOT ALLOWED ON THIS MACHINE!\n");
+		return KInitStatus::Failure;
+	}
+
+	m_gravityMapShader = KAssetLoader::getAssetLoader().loadShader(KTEXT("mapVert.glsl"), KTEXT("mapFrag.glsl"));
+	m_defaultBackgroundShader = KAssetLoader::getAssetLoader().loadShader(KTEXT("defaultVert.glsl"), KTEXT("defaultFrag.glsl"));
 
 	Vec2i gridDim((int32)(screenBounds.x / (float)GRID_NODE_SIZE), (int32)(screenBounds.y / (float)GRID_NODE_SIZE));
 	int* const tileIDs = new int[gridDim.x * gridDim.y]{ 0 };
 	m_tiledMap.setTexture(L"space2.png");
 	m_tiledMap.setupTiledMapFromArray(tileIDs, gridDim, Vec2i(GRID_NODE_SIZE, GRID_NODE_SIZE));
-	m_tiledMap.setShader(m_pShader);
+	m_tiledMap.setShader(m_defaultBackgroundShader);
 	KApplication::getApp()->getRenderer()->setActiveTiledMap(&m_tiledMap);
 	//setup physics world properties
 	Physics::KPhysicsWorldProperties worldProperties;
@@ -64,11 +70,7 @@ KInitStatus LevelSetup::init()
 	KINIT_CHECK(setupPlayerEntities());
 	KINIT_CHECK(addProjectiles());
 	KINIT_CHECK(createExtraPlanets());
-	if (!sf::Shader::isAvailable())
-	{
-		KPrintf(L"Eror!! SHADERS NOT ALLOWED ON THIS MACHINE!\n");
-		return KInitStatus::Failure;
-	}
+
 
 	return KInitStatus::Success;
 }
@@ -96,12 +98,22 @@ void LevelSetup::tick()
 	}
 
 	if (KInput::JustPressed(KKey::Tab))
+	{
 		m_bShowMap = !m_bShowMap;
-
+		if (m_bShowMap)
+		{
+			//bool m_bIsShaderActive = false;
+			m_tiledMap.setShader(m_gravityMapShader);
+		}
+		else
+		{
+			m_tiledMap.setShader(m_defaultBackgroundShader);
+		}
+	}
 #ifdef _DEBUG
 	if (KInput::JustPressed(KKey::R))
 	{
-		m_pShader->loadFromFile("res\\vert.glsl", "res\\frag.glsl");
+		m_gravityMapShader->loadFromFile("res\\mapVert.glsl", "res\\mapFrag.glsl");
 	}
 #endif
 	if (KInput::Pressed(KKey::Escape))
@@ -123,8 +135,8 @@ void LevelSetup::tick()
 		colours.push_back(sf::Glsl::Vec4((float)(m_planetCols[i].r) / 256.0f, (float)(m_planetCols[i].g) / 256.0f, (float)(m_planetCols[i].b) / 256.0f, 1.0f));
 	}
 
-	m_pShader->setUniformArray("planetPos", &centres[0], centres.size());
-	m_pShader->setUniformArray("colours", &colours[0], EXTRA_PLANET_COUNT + 1);
+	m_gravityMapShader->setUniformArray("planetPos", &centres[0], centres.size());
+	m_gravityMapShader->setUniformArray("colours", &colours[0], EXTRA_PLANET_COUNT + 1);
 }
 
 KInitStatus LevelSetup::setupPlayerEntities()
@@ -230,7 +242,7 @@ KInitStatus LevelSetup::createExtraPlanets()
 	for (int32 i = 0; i < TARGET_COUNT; ++i)
 	{
 		KEntity* pTarget = currentScene->addEntityToScene();
-		pTarget->addComponent(new PlanetTarget(pTarget, m_extraPlanets[i]));
+		pTarget->addComponent(new PlanetTarget(pTarget, m_extraPlanets[i % EXTRA_PLANET_COUNT]));
 	}
 
 	return KInitStatus::Success;

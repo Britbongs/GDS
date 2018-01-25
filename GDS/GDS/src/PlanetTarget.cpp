@@ -1,6 +1,8 @@
 #include "PlanetTarget.h"
 #include "GameBlackboard.h"
 
+#include <Input\KInput.h>
+
 #include <Components\KCSprite.h>
 #include <Components\KCBoxCollider.h>
 
@@ -44,6 +46,15 @@ void PlanetTarget::onEnterScene()
 	trans.y = sinf(Maths::Radians(angle)) * PLANET_RADIUS;
 
 	getEntity()->getComponent<KCTransform>()->move(trans);
+}
+
+void PlanetTarget::tick()
+{
+	if (Input::KInput::JustPressed(Input::KKey::R))
+	{
+		onEnterScene();
+		getEntity()->setIsInUse(true);
+	}
 }
 
 void PlanetTarget::handleCollision(const Krawler::KCollisionDetectionData & data)

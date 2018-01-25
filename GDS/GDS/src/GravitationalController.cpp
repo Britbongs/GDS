@@ -86,7 +86,6 @@ void GravitationalController::fixedTick()
 void GravitationalController::assembleList()
 {
 	auto pCurrentScene = KApplication::getApp()->getCurrentScene();
-
 	m_gravityInteractingEntities.clear();
 	KEntity* pEntityList = pCurrentScene->getEntitiyList();
 	for (int32 i = 0; i < (signed)pCurrentScene->getNumbrOfEntitiesAllocated(); ++i)

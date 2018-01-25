@@ -36,14 +36,15 @@ private:
 	Krawler::KEntity* m_pPlayerPlanet;
 
 	Krawler::Components::KPhysicsBodyProperties m_planetPhysicsProperties;
-	
+
 	Krawler::KEntity* m_extraPlanets[EXTRA_PLANET_COUNT];
-	
+
 	sf::Texture* m_pPlanetTexture;
 	sf::Texture* m_p8BallTexture;
 	sf::Texture* m_pBackground;
 
-	sf::Shader* m_pShader;
+	sf::Shader* m_gravityMapShader;
+	sf::Shader* m_defaultBackgroundShader;
 	Krawler::TiledMap::KTiledMap m_tiledMap;
 
 	Krawler::Colour m_planetCols[EXTRA_PLANET_COUNT + 1] =

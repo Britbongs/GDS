@@ -29,13 +29,15 @@ public:
 
 private:
 
+	void handleCollision(const Krawler::KCollisionDetectionData& data);
+	
 	sf::Texture* m_p8ballTexture;
 	float m_aliveTime = 0.0f;
 
 	static Krawler::Components::KPhysicsBodyProperties m_physicsProps;
 	Krawler::Components::KCColliderBaseCallback m_collCallback = [this](const Krawler::KCollisionDetectionData& data) -> void
 	{
-		resetProjectile();
+		handleCollision(data);
 	};
 };
 

@@ -2,12 +2,17 @@
 #include "GameBlackboard.h"
 
 #include <Input\KInput.h>
+#include <AssetLoader\KAssetLoader.h>
 
 #include <Components\KCSprite.h>
 #include <Components\KCBoxCollider.h>
 
 using namespace Krawler;
 using namespace Krawler::Components;
+
+#define CITY_IMAGE_FULL_HP Recti(0,0,256,256)
+#define CITY_IMAGE_HALF_HP Recti(1,0,256,256)
+#define CITY_IMAGE_NO_HP   Recti(2,0,256,256)
 
 PlanetTarget::PlanetTarget(KEntity * pTargetEntity, KEntity * pTargetPlanet)
 	: KComponentBase(pTargetEntity), m_pTargetPlanet(pTargetPlanet)
@@ -18,7 +23,7 @@ PlanetTarget::PlanetTarget(KEntity * pTargetEntity, KEntity * pTargetPlanet)
 Krawler::KInitStatus PlanetTarget::init()
 {
 	KEntity* pEntity = getEntity();
-
+	
 	pEntity->setEntityTag(KTEXT("target"));
 	KCTransform* pTransform = pEntity->getComponent<KCTransform>();
 	if (!pTransform)
@@ -32,6 +37,8 @@ Krawler::KInitStatus PlanetTarget::init()
 	pEntity->addComponent(new KCSprite(getEntity(), Vec2f(TARGET_SIZE, TARGET_SIZE)));
 	pEntity->addComponent(new KCBoxCollider(getEntity(), Vec2f(TARGET_SIZE, TARGET_SIZE)));
 
+	m_pTargetTexture = KAssetLoader::getAssetLoader().loadTexture(KTEXT("city.png"));
+	
 	return Krawler::KInitStatus::Success;
 }
 
@@ -46,6 +53,10 @@ void PlanetTarget::onEnterScene()
 	trans.y = sinf(Maths::Radians(angle)) * PLANET_RADIUS;
 
 	getEntity()->getComponent<KCTransform>()->move(trans);
+	//getEntity()->getComponent<KCTransform>()->rotate(angle);
+
+	getEntity()->getComponent<KCSprite>()->setTexture(m_pTargetTexture);
+	getEntity()->getComponent<KCSprite>()->setTextureRect(CITY_IMAGE_FULL_HP);
 }
 
 void PlanetTarget::tick()
@@ -60,7 +71,7 @@ void PlanetTarget::tick()
 void PlanetTarget::handleCollision(const Krawler::KCollisionDetectionData & data)
 {
 	KEntity* pCollidedWith = nullptr;
-	
+
 	if (data.entityA == getEntity())
 	{
 		pCollidedWith = data.entityB;

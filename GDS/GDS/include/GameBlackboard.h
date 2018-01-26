@@ -35,6 +35,6 @@ const static float PROJECTILE_ALIVE_TIME = 20.0f;
 //targets count 
 constexpr static float TARGET_COUNT = EXTRA_PLANET_COUNT * 3.0f;
 
-const static float TARGET_SIZE = 16;
+const static float TARGET_SIZE = 32;
 
 #endif

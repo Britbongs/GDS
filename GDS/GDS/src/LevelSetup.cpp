@@ -276,4 +276,5 @@ void LevelSetup::setupPlanetPositionsAndTextures()
 
 	m_extraPlanets[2]->getComponent<KCTransform>()->setTranslation(Vec2f(118, 504));
 	m_extraPlanets[2]->getComponent<StaticPlanetController>()->setPositionToMaintain(Vec2f(118, 504));
+
 }

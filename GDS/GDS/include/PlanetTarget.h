@@ -5,6 +5,8 @@
 #include <Components\KCTransform.h>
 #include <Components\KCColliderBase.h>
 
+#include <SFML\Graphics\Texture.hpp>
+
 class PlanetTarget : public Krawler::KComponentBase
 {
 public:
@@ -14,7 +16,7 @@ public:
 
 	virtual Krawler::KInitStatus init() override;
 	virtual void onEnterScene() override;
-	virtual void tick() override; 
+	virtual void tick() override;
 
 private:
 
@@ -26,6 +28,7 @@ private:
 	{
 		handleCollision(data);
 	};
+	sf::Texture* m_pTargetTexture;
 };
 
 #endif 

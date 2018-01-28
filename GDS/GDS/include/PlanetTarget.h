@@ -11,7 +11,7 @@ class PlanetTarget : public Krawler::KComponentBase
 {
 public:
 
-	PlanetTarget(Krawler::KEntity* pTargetEntity, Krawler::KEntity* pTargetPlanet);
+	PlanetTarget(Krawler::int32 targetIndex, Krawler::KEntity* pTargetEntity, Krawler::KEntity* pTargetPlanet);
 	~PlanetTarget() = default;
 
 	virtual Krawler::KInitStatus init() override;
@@ -29,6 +29,8 @@ private:
 		handleCollision(data);
 	};
 	sf::Texture* m_pTargetTexture;
+
+	Krawler::int32 m_targetIndex;
 };
 
 #endif 

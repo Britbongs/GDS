@@ -79,6 +79,7 @@ void PlayerController::onEnterScene()
 	getEntity()->getComponent<KCSprite>()->setTextureRect(TankTexRect);
 
 	m_pLauncher->getComponent<KCTransform>()->setParent(getEntity());
+	m_pLauncher->getComponent<KCTransform>()->setTranslation(Vec2f(20.0f, 12.0f));
 	m_pLauncher->getComponent<KCSprite>()->setTexture(m_pLauncherTexture);
 	m_pLauncher->getComponent<KCSprite>()->setTextureRect(LauncherTexRect);
 
@@ -90,6 +91,8 @@ void PlayerController::tick()
 	float dt = KApplication::getApp()->getDeltaTime();
 	float rot = 0.0f;
 
+	KCTransform* pLauncherTransform = m_pLauncher->getComponent<KCTransform>();
+
 	if (KInput::Pressed(KKey::Q))
 	{
 		rot -= ROTATION_AMOUNT;
@@ -100,14 +103,18 @@ void PlayerController::tick()
 		rot += ROTATION_AMOUNT;
 	}
 
+	const float launcherRotationIndependantOfParentTransform = pLauncherTransform->getRotation() - m_pTransformComponent->getRotation();
+
 	if (KInput::Pressed(KKey::A))
 	{
-		m_pLauncher->getComponent<KCTransform>()->rotate(ROTATION_AMOUNT*dt);
+		if (launcherRotationIndependantOfParentTransform > -90.0f)
+			m_pLauncher->getComponent<KCTransform>()->rotate(-ROTATION_AMOUNT*dt);
 	}
 
 	if (KInput::Pressed(KKey::D))
 	{
-		m_pLauncher->getComponent<KCTransform>()->rotate(-ROTATION_AMOUNT*dt);
+		if (launcherRotationIndependantOfParentTransform < 90.0f)
+			pLauncherTransform->rotate(ROTATION_AMOUNT*dt);
 	}
 
 	m_rotationAngleDegrees += rot * dt;
@@ -117,12 +124,9 @@ void PlayerController::tick()
 
 	if (KInput::JustPressed(KKey::Space))
 	{
-		const float angleInRad = Maths::Radians(m_rotationAngleDegrees);
-
-		const Vec2f scale = m_pTransformComponent->getScale();
-		const Vec2f origin = m_pTransformComponent->getOrigin();
-		const Vec2f centre = m_pTransformComponent->getPosition() + RotateVector(Vec2f(origin.x * scale.x, origin.y * scale.y), m_rotationAngleDegrees);
-		m_pProjectileHandler->fireProjectile(centre, Vec2f(cosf(angleInRad), sinf(angleInRad)));
+		Vec2f launchDirection;
+		launchDirection = RotateVector(Vec2f(0, -1), m_pLauncher->getComponent<KCTransform>()->getRotation());
+		m_pProjectileHandler->fireProjectile(pLauncherTransform->getPosition(), launchDirection);
 	}
 }
 

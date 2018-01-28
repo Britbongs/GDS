@@ -14,8 +14,8 @@ using namespace Krawler::Components;
 #define CITY_IMAGE_HALF_HP Recti(1,0,256,256)
 #define CITY_IMAGE_NO_HP   Recti(2,0,256,256)
 
-PlanetTarget::PlanetTarget(KEntity * pTargetEntity, KEntity * pTargetPlanet)
-	: KComponentBase(pTargetEntity), m_pTargetPlanet(pTargetPlanet)
+PlanetTarget::PlanetTarget(int32 targetIndex, KEntity * pTargetEntity, KEntity * pTargetPlanet)
+	: m_targetIndex(targetIndex), KComponentBase(pTargetEntity), m_pTargetPlanet(pTargetPlanet)
 {
 
 }
@@ -23,7 +23,7 @@ PlanetTarget::PlanetTarget(KEntity * pTargetEntity, KEntity * pTargetPlanet)
 Krawler::KInitStatus PlanetTarget::init()
 {
 	KEntity* pEntity = getEntity();
-	
+
 	pEntity->setEntityTag(KTEXT("target"));
 	KCTransform* pTransform = pEntity->getComponent<KCTransform>();
 	if (!pTransform)
@@ -34,11 +34,12 @@ Krawler::KInitStatus PlanetTarget::init()
 
 	pTransform->setParent(m_pTargetPlanet);
 	pTransform->setOrigin(TARGET_SIZE / 2.0f, TARGET_SIZE / 2.0f);
+	pTransform->move(PLANET_RADIUS, PLANET_RADIUS);
 	pEntity->addComponent(new KCSprite(getEntity(), Vec2f(TARGET_SIZE, TARGET_SIZE)));
 	pEntity->addComponent(new KCBoxCollider(getEntity(), Vec2f(TARGET_SIZE, TARGET_SIZE)));
 
 	m_pTargetTexture = KAssetLoader::getAssetLoader().loadTexture(KTEXT("city.png"));
-	
+
 	return Krawler::KInitStatus::Success;
 }
 
@@ -47,13 +48,13 @@ void PlanetTarget::onEnterScene()
 	getEntity()->getComponent<KCColliderBase>()->subscribeCollisionCallback(&m_callback);
 
 	// 
-	float angle = Maths::RandFloat(0, 360.0f);
+	float angle = static_cast<float>( m_targetIndex * (360 / TARGETS_PER_PLANET));
 	Vec2f trans;
-	trans.x = cosf(Maths::Radians(angle)) * PLANET_RADIUS;
-	trans.y = sinf(Maths::Radians(angle)) * PLANET_RADIUS;
+	trans.x = cosf(Maths::Radians(angle)) * (PLANET_RADIUS * 1.2f);
+	trans.y = sinf(Maths::Radians(angle)) * (PLANET_RADIUS * 1.2f);
 
 	getEntity()->getComponent<KCTransform>()->move(trans);
-	//getEntity()->getComponent<KCTransform>()->rotate(angle);
+	getEntity()->getComponent<KCTransform>()->rotate(angle + 90);
 
 	getEntity()->getComponent<KCSprite>()->setTexture(m_pTargetTexture);
 	getEntity()->getComponent<KCSprite>()->setTextureRect(CITY_IMAGE_FULL_HP);
@@ -63,7 +64,6 @@ void PlanetTarget::tick()
 {
 	if (Input::KInput::JustPressed(Input::KKey::R))
 	{
-		onEnterScene();
 		getEntity()->setIsInUse(true);
 	}
 }

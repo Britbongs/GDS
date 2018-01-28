@@ -238,10 +238,13 @@ KInitStatus LevelSetup::createExtraPlanets()
 		m_extraPlanets[i]->addComponent(new StaticPlanetController(m_extraPlanets[i], Vec2f(0.0f, 0.0f)));
 	}
 
-	for (int32 i = 0; i < TARGET_COUNT; ++i)
-	{
-		KEntity* pTarget = currentScene->addEntityToScene();
-		pTarget->addComponent(new PlanetTarget(pTarget, m_extraPlanets[i % EXTRA_PLANET_COUNT]));
+	for (int32 i = 0; i < EXTRA_PLANET_COUNT; ++i)
+	{// for each planet
+		for (int32 j = 0; j < TARGET_COUNT; ++j)
+		{//place 3 targets
+			KEntity* pTarget = currentScene->addEntityToScene();
+			pTarget->addComponent(new PlanetTarget(j, pTarget, m_extraPlanets[i]));
+		}
 	}
 
 	return KInitStatus::Success;
@@ -276,4 +279,5 @@ void LevelSetup::setupPlanetPositionsAndTextures()
 
 	m_extraPlanets[2]->getComponent<KCTransform>()->setTranslation(Vec2f(118, 504));
 	m_extraPlanets[2]->getComponent<StaticPlanetController>()->setPositionToMaintain(Vec2f(118, 504));
+
 }

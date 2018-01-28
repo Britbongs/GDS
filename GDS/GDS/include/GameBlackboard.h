@@ -33,8 +33,10 @@ const static float KICKOFF_FORCE = 1.4e12f;
 const static float PROJECTILE_ALIVE_TIME = 20.0f;
 
 //targets count 
-constexpr static float TARGET_COUNT = EXTRA_PLANET_COUNT * 3.0f;
+constexpr static Krawler::int32 TARGET_COUNT = EXTRA_PLANET_COUNT * 3;
 
-const static float TARGET_SIZE = 16;
+constexpr static Krawler::int32 TARGETS_PER_PLANET = 3;
+
+const static float TARGET_SIZE = 32;
 
 #endif

@@ -15,7 +15,7 @@ public:
 	~PlayerController() = default;
 
 	virtual Krawler::KInitStatus init() override;
-	virtual void onEnterScene() override; 
+	virtual void onEnterScene() override;
 
 	virtual void tick() override;
 	virtual void fixedTick() override;
@@ -23,7 +23,7 @@ public:
 private:
 
 	const float PLANET_RADIUS;
-	const Krawler::Vec2f PLANET_CENTRE_POS; 
+	const Krawler::Vec2f PLANET_CENTRE_POS;
 
 	const float ROTATION_AMOUNT;
 	void updateTranslation();
@@ -34,7 +34,11 @@ private:
 	float m_orbitDistance;
 	float m_rotationAngleDegrees;
 	ProjectileHandler* m_pProjectileHandler;
-	
+
+	sf::Texture* m_pTankTexture;
+	sf::Texture* m_pLauncherTexture;
+	Krawler::KEntity* m_pLauncher;
+
 
 };
 

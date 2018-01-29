@@ -6,7 +6,7 @@
 //physics engine & game
 const static Krawler::Rectf SCENE_BOUNDS(-1000, -1000, 2000, 2000);
 
-const static float METRES_TO_PIXELS = 900;
+const static float METRES_TO_PIXELS = 1000;
 
 //planet & gravity
 const static float PLANET_RADIUS = 32.0f;

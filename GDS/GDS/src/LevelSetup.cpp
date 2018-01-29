@@ -38,7 +38,7 @@ KInitStatus LevelSetup::init()
 
 	//add background to scene
 	KAssetLoader::getAssetLoader().setRootFolder(KTEXT("res\\"));
-	m_pBackground = KAssetLoader::getAssetLoader().loadTexture(KTEXT("space2.png"));
+	m_pBackground = KAssetLoader::getAssetLoader().loadTexture(KTEXT("space.png"));
 
 	if (!sf::Shader::isAvailable())
 	{
@@ -49,12 +49,7 @@ KInitStatus LevelSetup::init()
 	m_gravityMapShader = KAssetLoader::getAssetLoader().loadShader(KTEXT("mapVert.glsl"), KTEXT("mapFrag.glsl"));
 	m_defaultBackgroundShader = KAssetLoader::getAssetLoader().loadShader(KTEXT("defaultVert.glsl"), KTEXT("defaultFrag.glsl"));
 
-	Vec2i gridDim((int32)(screenBounds.x / (float)GRID_NODE_SIZE), (int32)(screenBounds.y / (float)GRID_NODE_SIZE));
-	int* const tileIDs = new int[gridDim.x * gridDim.y]{ 0 };
-	m_tiledMap.setTexture(L"space2.png");
-	m_tiledMap.setupTiledMapFromArray(tileIDs, gridDim, Vec2i(GRID_NODE_SIZE, GRID_NODE_SIZE));
-	m_tiledMap.setShader(m_defaultBackgroundShader);
-	KApplication::getApp()->getRenderer()->setActiveTiledMap(&m_tiledMap);
+	setupBackgroundTiledmap();
 	//setup physics world properties
 	Physics::KPhysicsWorldProperties worldProperties;
 	worldProperties.gravity = Vec2f(0.0f, 0.f);
@@ -102,11 +97,11 @@ void LevelSetup::tick()
 		m_bShowMap = !m_bShowMap;
 		if (m_bShowMap)
 		{
-			m_tiledMap.setShader(m_gravityMapShader);
+			m_gravityMapTiledMap.setShader(m_gravityMapShader);
 		}
 		else
 		{
-			m_tiledMap.setShader(m_defaultBackgroundShader);
+			m_gravityMapTiledMap.setShader(m_defaultBackgroundShader);
 		}
 	}
 #ifdef _DEBUG
@@ -279,5 +274,32 @@ void LevelSetup::setupPlanetPositionsAndTextures()
 
 	m_extraPlanets[2]->getComponent<KCTransform>()->setTranslation(Vec2f(118, 504));
 	m_extraPlanets[2]->getComponent<StaticPlanetController>()->setPositionToMaintain(Vec2f(118, 504));
+
+}
+
+void LevelSetup::setupBackgroundTiledmap()
+{
+	Vec2f screenBounds(KApplication::getApp()->getWindowSize());
+
+	Vec2i gridDim((int32)(screenBounds.x / (float)GRID_NODE_SIZE), (int32)(screenBounds.y / (float)GRID_NODE_SIZE));
+	std::vector<int> tileIDs(gridDim.x * gridDim.y, 0);
+	m_gravityMapTiledMap.setupTiledMapFromArray(tileIDs, gridDim, Vec2i(GRID_NODE_SIZE, GRID_NODE_SIZE), Vec2i(256, 256));
+	m_gravityMapTiledMap.setTexture(m_pBackground);
+	m_gravityMapTiledMap.setAllTilesColour(Colour::Green);
+	m_gravityMapTiledMap.setShader(m_defaultBackgroundShader);
+	KApplication::getApp()->getRenderer()->addTiledMap(0, &m_gravityMapTiledMap);
+
+	KApplication::getApp()->getRenderer()->addTiledMap(-1, &m_backgroundTiledMap);
+	gridDim /= 64;
+
+	std::vector<int> tileIDsArray(gridDim.x * gridDim.y, 0);
+
+	for (int i = 0; i < gridDim.x * gridDim.y; ++i)
+	{
+		tileIDsArray[i] = rand() % 2;
+	}
+	m_backgroundTiledMap.setupTiledMapFromArray(tileIDs, gridDim, Vec2i(128, 128), Vec2i(256, 256));
+	m_backgroundTiledMap.setTexture(m_pBackground);
+
 
 }

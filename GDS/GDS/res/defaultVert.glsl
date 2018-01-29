@@ -7,5 +7,5 @@ void main()
 	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;
 
 	// forward the vertex color
-	gl_FrontColor = vec4(0, 0, 0, 1);//gl_Color; // sets bg to black
+	gl_FrontColor = vec4(0, 0, 0, 0);//gl_Color; // sets bg to black
 }

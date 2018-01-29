@@ -116,6 +116,7 @@ void ProjectileHandler::fireProjectile(const Vec2f& startPos, const Vec2f& direc
 		return;
 	}
 	pProjectile->setIsInUse(true);
+	pProjectile->getComponent<KCCircleCollider>()->tick();
 	pProjectile->getComponent<KCTransform>()->setTranslation(startPos);
 	pProjectile->getComponent<KCPhysicsBody>()->applyForce(direction * KICKOFF_FORCE);
 }

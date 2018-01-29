@@ -141,7 +141,7 @@
     <ClInclude Include="include\Projectiles.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\DefaultFrag.glsl" />
+    <None Include="res\defaultFrag.glsl" />
     <None Include="res\defaultVert.glsl" />
     <None Include="res\mapFrag.glsl" />
     <None Include="res\mapVert.glsl" />

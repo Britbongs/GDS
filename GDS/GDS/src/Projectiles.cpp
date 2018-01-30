@@ -53,7 +53,10 @@ void Projectile::tick()
 void Projectile::onEnterScene()
 {
 	getEntity()->getComponent<KCSprite>()->setTexture(m_p8ballTexture);
-	getEntity()->getComponent<KCColliderBase>()->subscribeCollisionCallback(&m_collCallback);
+	KCColliderBase* pColliderBase = getEntity()->getComponent<KCColliderBase>();
+	pColliderBase->subscribeCollisionCallback(&m_collCallback);
+	constexpr int16 ProjectileCollisionLayer = (0xF << 1) | 0xF;
+	pColliderBase->setCollisionLayer(ProjectileCollisionLayer);
 }
 
 void Projectile::resetProjectile()
@@ -63,6 +66,7 @@ void Projectile::resetProjectile()
 	KCPhysicsBody* pPhysBody = getEntity()->getComponent<KCPhysicsBody>();
 	pPhysBody->setVelocity(Vec2f(0.0f, 0.0f));
 	pPhysBody->applyForce(-pPhysBody->getForce());
+
 }
 
 void Projectile::handleCollision(const Krawler::KCollisionDetectionData & data)
@@ -116,7 +120,7 @@ void ProjectileHandler::fireProjectile(const Vec2f& startPos, const Vec2f& direc
 		return;
 	}
 	pProjectile->setIsInUse(true);
-	pProjectile->getComponent<KCCircleCollider>()->tick();
+	pProjectile->getComponent<KCCircleCollider>()->getCentrePosition();
 	pProjectile->getComponent<KCTransform>()->setTranslation(startPos);
 	pProjectile->getComponent<KCPhysicsBody>()->applyForce(direction * KICKOFF_FORCE);
 }
@@ -125,7 +129,7 @@ KEntity* ProjectileHandler::getProjectileToFire()
 {
 	auto result = std::find_if(m_projectilesVec.begin(), m_projectilesVec.end(), [](KEntity* pEntity) -> bool
 	{
-		return !pEntity->isEntitiyInUse();
+		return !pEntity->isEntityInUse();
 	});
 
 	if (result == m_projectilesVec.end())

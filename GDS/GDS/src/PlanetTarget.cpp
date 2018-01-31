@@ -59,9 +59,11 @@ void PlanetTarget::onEnterScene()
 	getEntity()->getComponent<KCSprite>()->setTexture(m_pTargetTexture);
 	getEntity()->getComponent<KCSprite>()->setTextureRect(CITY_IMAGE_FULL_HP);
 
-	constexpr int16 TargetCollisionLayer = 0xF;
+	KCColliderFilteringData filter;
+	filter.collisionFilter = 0x01;
+	filter.collisionMask = 0x02;
 
-	getEntity()->getComponent<KCColliderBase>()->setCollisionLayer(TargetCollisionLayer);
+	getEntity()->getComponent<KCColliderBase>()->setCollisionFilteringData(filter);
 }
 
 void PlanetTarget::tick()

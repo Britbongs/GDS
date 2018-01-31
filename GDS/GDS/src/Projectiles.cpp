@@ -55,8 +55,12 @@ void Projectile::onEnterScene()
 	getEntity()->getComponent<KCSprite>()->setTexture(m_p8ballTexture);
 	KCColliderBase* pColliderBase = getEntity()->getComponent<KCColliderBase>();
 	pColliderBase->subscribeCollisionCallback(&m_collCallback);
-	constexpr int16 ProjectileCollisionLayer = (0xF << 1) | 0xF;
-	pColliderBase->setCollisionLayer(ProjectileCollisionLayer);
+
+	KCColliderFilteringData filter;
+	filter.collisionFilter = 0x0012;
+	filter.collisionMask = 0x0011;
+
+	pColliderBase->setCollisionFilteringData(filter);
 }
 
 void Projectile::resetProjectile()

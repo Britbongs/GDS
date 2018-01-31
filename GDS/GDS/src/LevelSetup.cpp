@@ -250,6 +250,10 @@ void LevelSetup::setupPlanetPositionsAndTextures()
 	const Vec2f screenBounds(KApplication::getApp()->getWindowSize());
 	KCollisionDetectionData data;
 	constexpr int16 PlanetCollisionLayer = (0xF << 1);
+
+	KCColliderFilteringData filter;
+	filter.collisionMask = filter.collisionFilter = 0x0010;
+
 	for (int32 i = 0; i < EXTRA_PLANET_COUNT; ++i)
 	{
 		KEntity*& pPlanet = m_extraPlanets[i];
@@ -264,7 +268,7 @@ void LevelSetup::setupPlanetPositionsAndTextures()
 		pSprite->setTexture(m_pPlanetTexture);
 		pSprite->setTextureRect(Recti(256, 256, 256, 256));
 
-		pPlanet->getComponent<KCColliderBase>()->setCollisionLayer(PlanetCollisionLayer);
+		pPlanet->getComponent<KCColliderBase>()->setCollisionFilteringData(filter);
 	}
 
 	m_extraPlanets[0]->getComponent<KCTransform>()->setTranslation(Vec2f(134, 97));

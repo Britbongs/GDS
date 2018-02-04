@@ -31,7 +31,7 @@ private:
 
 	void handleCollision(const Krawler::KCollisionDetectionData& data);
 	
-	sf::Texture* m_p8ballTexture;
+	sf::Texture* m_pProjectileTexture;
 	float m_aliveTime = 0.0f;
 
 	static Krawler::Components::KPhysicsBodyProperties m_physicsProps;

@@ -39,7 +39,12 @@ Krawler::KInitStatus PlanetTarget::init()
 	pEntity->addComponent(new KCBoxCollider(getEntity(), Vec2f(TARGET_SIZE, TARGET_SIZE)));
 
 	m_pTargetTexture = KAssetLoader::getAssetLoader().loadTexture(KTEXT("city.png"));
-
+	m_pTargetTexture->setSmooth(true);
+	if (!m_pTargetTexture->generateMipmap())
+	{
+		KPrintf(KTEXT("Unable to generate mipmap for target texture!\n"));
+	}
+	getEntity()->setIsInUse(true);
 	return Krawler::KInitStatus::Success;
 }
 

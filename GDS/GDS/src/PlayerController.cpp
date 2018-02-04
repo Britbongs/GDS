@@ -47,11 +47,23 @@ Krawler::KInitStatus PlayerController::init()
 		return Krawler::KInitStatus::MissingResource;
 	}
 
+	if (!m_pTankTexture->generateMipmap())
+	{
+		KPrintf(KTEXT("Unable to generate mipmap for tank texture!\n"));
+	}
+
+	if (!m_pLauncherTexture->generateMipmap())
+	{
+		KPrintf(KTEXT("Unable to generate mipmap for launcher texture!\n"));
+	}
+
+	m_pTankTexture->setSmooth(true);
+	m_pLauncherTexture->setSmooth(true);
+
 	KScene* pCurrentScene = KApplication::getApp()->getCurrentScene();
 	KCHECK(pCurrentScene);
 
 	m_pLauncher = pCurrentScene->addEntityToScene();
-
 	KCHECK(m_pLauncher);
 
 	if (!m_pLauncher)
@@ -63,6 +75,7 @@ Krawler::KInitStatus PlayerController::init()
 	m_pLauncher->getComponent<KCTransform>()->setOrigin(Vec2f(CANNON_WIDTH * 0.48f, CANNON_HEIGHT*0.87f));
 	getEntity()->setEntityTag(KTEXT("player_tank"));
 	m_pLauncher->setEntityTag(KTEXT("player_launcher"));
+
 	return Krawler::KInitStatus::Success;
 }
 

@@ -21,7 +21,6 @@ using namespace Krawler::Input;
 using namespace Krawler::Components;
 using namespace Krawler::TiledMap;
 
-#define TEST_BOX_COUNT 20
 #define GRID_NODE_SIZE 1
 
 /*-- Level Setup --*/
@@ -66,7 +65,12 @@ KInitStatus LevelSetup::init()
 	KINIT_CHECK(addProjectiles());
 	KINIT_CHECK(createExtraPlanets());
 
-
+#ifdef DEBUG_COLLIDER
+	KScene* const pScene = KApplication::getApp()->getCurrentScene();
+	m_pCollisionTest = pScene->addEntityToScene();
+	m_pCollisionTest->addComponent(new KCSprite(m_pCollisionTest, Vec2f(32, 32)));
+	m_pCollisionTest->addComponent(new KCCircleCollider(m_pCollisionTest, 16.0f));
+#endif 
 	return KInitStatus::Success;
 }
 
@@ -77,9 +81,25 @@ void LevelSetup::onEnterScene()
 	auto sprite = m_pPlayerPlanet->getComponent<KCSprite>();
 	sprite->setTexture(m_pPlanetTexture);
 	sprite->setTextureRect(Recti(0, 0, 256, 256));
+	KCColliderFilteringData filter;
+	filter.collisionFilter = 0x0010;
+	filter.collisionMask = 0x002;
+	m_pPlayerPlanet->getComponent<KCColliderBase>()->setCollisionFilteringData(filter);
 
 	auto pTransform = m_pPlayerPlanet->getComponent<KCTransform>();
 	pTransform->setOrigin(Vec2f(PLANET_RADIUS, PLANET_RADIUS));
+
+#ifdef DEBUG_COLLIDER
+	m_pCollisionTest->getComponent<KCTransform>()->setOrigin(Vec2f(16, 16));
+	m_pCollisionTest->getComponent<KCColliderBase>()->subscribeCollisionCallback(&m_colliderTestCallback);
+	KCColliderFilteringData debugColliderFilter;
+	filter.collisionFilter = 0x0012;
+	filter.collisionMask = 0x0011;
+	m_pCollisionTest->getComponent<KCColliderBase>()->setCollisionFilteringData(filter);
+	m_pCollisionTest->getComponent<KCSprite>()->setTexture(m_pPlanetTexture);
+	m_pCollisionTest->getComponent<KCSprite>()->setTextureRect(Recti(0, 0, 256, 256));
+	m_pCollisionTest->setEntityTag(KTEXT("test"));
+#endif
 
 	setupPlanetPositionsAndTextures();
 }
@@ -115,6 +135,18 @@ void LevelSetup::tick()
 		KApplication::getApp()->closeApplication();
 	}
 
+#ifdef DEBUG_COLLIDER
+	Vec2f pos = KInput::GetMouseWorldPosition();
+	m_pCollisionTest->getComponent<KCTransform>()->setTranslation(pos);
+	if (!m_bColliderTestIntersection)
+	{
+		m_pCollisionTest->getComponent<KCSprite>()->setColour(Colour::Red);
+	}
+	else
+	{
+		m_pCollisionTest->getComponent<KCSprite>()->setColour(Colour::Green);
+	}
+#endif 
 	//PASSING SHADER PARAMETERS
 	std::vector<Vec2f>centres;
 	std::vector<sf::Glsl::Vec4> colours;
@@ -131,6 +163,10 @@ void LevelSetup::tick()
 
 	m_gravityMapShader->setUniformArray("planetPos", &centres[0], centres.size());
 	m_gravityMapShader->setUniformArray("colours", &colours[0], EXTRA_PLANET_COUNT + 1);
+#ifdef DEBUG_COLLIDER
+
+	m_bColliderTestIntersection = false;
+#endif
 }
 
 KInitStatus LevelSetup::setupPlayerEntities()
@@ -173,6 +209,13 @@ KInitStatus LevelSetup::setupPlayerEntities()
 	{
 		return KInitStatus::MissingResource;
 	}
+
+	if (!m_pPlanetTexture->generateMipmap())
+	{
+		KPrintf(KTEXT("Unable to generate mipmap for planet texture!\n"));
+	}
+
+	m_pPlanetTexture->setSmooth(true);
 
 	KEntity* const pPlayerSatellite = pCurrentScene->addEntityToScene();
 	pPlayerSatellite->addComponent(new PlayerController(pPlayerSatellite, Vec2f(KApplication::getApp()->getWindowSize()) * 0.5f, PLANET_RADIUS));
@@ -248,12 +291,9 @@ KInitStatus LevelSetup::createExtraPlanets()
 void LevelSetup::setupPlanetPositionsAndTextures()
 {
 	const Vec2f screenBounds(KApplication::getApp()->getWindowSize());
-	KCollisionDetectionData data;
-	constexpr int16 PlanetCollisionLayer = (0xF << 1);
-
 	KCColliderFilteringData filter;
-	filter.collisionMask = filter.collisionFilter = 0x0010;
-
+	filter.collisionFilter = 0x0010;
+	filter.collisionMask = 0x002;
 	for (int32 i = 0; i < EXTRA_PLANET_COUNT; ++i)
 	{
 		KEntity*& pPlanet = m_extraPlanets[i];
@@ -307,5 +347,10 @@ void LevelSetup::setupBackgroundTiledmap()
 	m_backgroundTiledMap.setupTiledMapFromArray(tileIDs, gridDim, Vec2i(128, 128), Vec2i(256, 256));
 	m_backgroundTiledMap.setTexture(m_pBackground);
 
-
 }
+#ifdef DEBUG_COLLIDER
+void LevelSetup::resolveTestColliderIntersection()
+{
+	m_bColliderTestIntersection = true;
+}
+#endif

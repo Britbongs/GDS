@@ -47,6 +47,7 @@ void main()
 		col += mix(WEAK_GRAVITY_COL, colours[i], t[i]);
 	}
 	vec4 normalizedColour = normalize(col);
+	normalizedColour *= 2.0f;
 	//normalizedColour *= ;
 	gl_FrontColor = vec4(normalizedColour.x, normalizedColour.y, normalizedColour.z, 0.9f);
 }

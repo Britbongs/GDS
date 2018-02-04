@@ -14,7 +14,7 @@ using namespace Krawler::Components;
 KPhysicsBodyProperties Projectile::m_physicsProps = KPhysicsBodyProperties{ PROJECTILE_MASS, 0.3f, 0.3f, 0.1f };
 
 Projectile::Projectile(KEntity * pEntity, int32 index)
-	: KComponentBase(pEntity), m_p8ballTexture(nullptr)
+	: KComponentBase(pEntity), m_pProjectileTexture(nullptr)
 {
 	setComponentTag(KTEXT("projectile " + std::to_wstring(index)));
 	pEntity->setEntityTag(KTEXT("entity projectile ") + std::to_wstring(index));
@@ -30,8 +30,15 @@ KInitStatus Projectile::init()
 	pEntity->getComponent<KCTransform>()->setOrigin(Vec2f(PROJECTILE_RADIUS, PROJECTILE_RADIUS));
 	KAssetLoader& rAsset = KAssetLoader::getAssetLoader();
 
-	m_p8ballTexture = rAsset.loadTexture(KTEXT("asteroid.png"));
-	if (!m_p8ballTexture)
+	m_pProjectileTexture = rAsset.loadTexture(KTEXT("asteroid.png"));
+
+	if (!m_pProjectileTexture->generateMipmap())
+	{
+		KPrintf(KTEXT("Unable to generate mipmaps for projectile texture!\n"));
+	}
+	m_pProjectileTexture->setSmooth(true);
+	
+	if (!m_pProjectileTexture)
 	{
 		KPrintf(KTEXT("Missing asteroid texture for projectile!\n"));
 		return KInitStatus::MissingResource;
@@ -52,7 +59,7 @@ void Projectile::tick()
 
 void Projectile::onEnterScene()
 {
-	getEntity()->getComponent<KCSprite>()->setTexture(m_p8ballTexture);
+	getEntity()->getComponent<KCSprite>()->setTexture(m_pProjectileTexture);
 	KCColliderBase* pColliderBase = getEntity()->getComponent<KCColliderBase>();
 	pColliderBase->subscribeCollisionCallback(&m_collCallback);
 

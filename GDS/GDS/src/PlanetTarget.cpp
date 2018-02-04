@@ -39,7 +39,12 @@ Krawler::KInitStatus PlanetTarget::init()
 	pEntity->addComponent(new KCBoxCollider(getEntity(), Vec2f(TARGET_SIZE, TARGET_SIZE)));
 
 	m_pTargetTexture = KAssetLoader::getAssetLoader().loadTexture(KTEXT("city.png"));
-
+	m_pTargetTexture->setSmooth(true);
+	if (!m_pTargetTexture->generateMipmap())
+	{
+		KPrintf(KTEXT("Unable to generate mipmap for target texture!\n"));
+	}
+	getEntity()->setIsInUse(true);
 	return Krawler::KInitStatus::Success;
 }
 
@@ -48,7 +53,7 @@ void PlanetTarget::onEnterScene()
 	getEntity()->getComponent<KCColliderBase>()->subscribeCollisionCallback(&m_callback);
 
 	// 
-	float angle = static_cast<float>( m_targetIndex * (360 / TARGETS_PER_PLANET));
+	float angle = static_cast<float>(m_targetIndex * (360 / TARGETS_PER_PLANET));
 	Vec2f trans;
 	trans.x = cosf(Maths::Radians(angle)) * (PLANET_RADIUS * 1.2f);
 	trans.y = sinf(Maths::Radians(angle)) * (PLANET_RADIUS * 1.2f);
@@ -58,6 +63,12 @@ void PlanetTarget::onEnterScene()
 
 	getEntity()->getComponent<KCSprite>()->setTexture(m_pTargetTexture);
 	getEntity()->getComponent<KCSprite>()->setTextureRect(CITY_IMAGE_FULL_HP);
+
+	KCColliderFilteringData filter;
+	filter.collisionFilter = 0x01;
+	filter.collisionMask = 0x02;
+
+	getEntity()->getComponent<KCColliderBase>()->setCollisionFilteringData(filter);
 }
 
 void PlanetTarget::tick()
@@ -95,6 +106,6 @@ void PlanetTarget::handleCollision(const Krawler::KCollisionDetectionData & data
 		return;
 	}
 
-	KPrintf(KTEXT("Projectile hit target!\n"));
+	//KPrintf(KTEXT("Projectile hit target!\n"));
 	getEntity()->setIsInUse(false);
 }

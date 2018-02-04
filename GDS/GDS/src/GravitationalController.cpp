@@ -31,7 +31,6 @@ GravitationalController::GravitationalController(Krawler::KEntity * pEntity)
 
 void GravitationalController::tick()
 {
-	assembleList();
 }
 
 void GravitationalController::fixedTick()
@@ -40,6 +39,7 @@ void GravitationalController::fixedTick()
 	KCPhysicsBody* pPhysA, *pPhysB;
 	KEntity* pEntityA, *pEntityB;
 	auto metresToPixels = KApplication::getApp()->getPhysicsWorld()->getPhysicsWorldProperties().metresToPixels;
+	assembleList();
 
 	for (auto itI = m_gravityInteractingEntities.begin(); itI != m_gravityInteractingEntities.end(); ++itI) //iterator I 
 	{
@@ -87,11 +87,11 @@ void GravitationalController::assembleList()
 {
 	auto pCurrentScene = KApplication::getApp()->getCurrentScene();
 	m_gravityInteractingEntities.clear();
-	KEntity* pEntityList = pCurrentScene->getEntitiyList();
+	KEntity* pEntityList = pCurrentScene->getEntityList();
 	for (int32 i = 0; i < (signed)pCurrentScene->getNumbrOfEntitiesAllocated(); ++i)
 	{
 		KEntity* pEntity = &pEntityList[i];
-		if (!pEntity->isEntitiyInUse())
+		if (!pEntity->isEntityInUse())
 		{
 			continue;
 		}

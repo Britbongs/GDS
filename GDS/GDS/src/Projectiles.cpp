@@ -14,7 +14,7 @@ using namespace Krawler::Components;
 KPhysicsBodyProperties Projectile::m_physicsProps = KPhysicsBodyProperties{ PROJECTILE_MASS, 0.3f, 0.3f, 0.1f };
 
 Projectile::Projectile(KEntity * pEntity, int32 index)
-	: KComponentBase(pEntity), m_p8ballTexture(nullptr)
+	: KComponentBase(pEntity), m_pProjectileTexture(nullptr)
 {
 	setComponentTag(KTEXT("projectile " + std::to_wstring(index)));
 	pEntity->setEntityTag(KTEXT("entity projectile ") + std::to_wstring(index));
@@ -30,8 +30,15 @@ KInitStatus Projectile::init()
 	pEntity->getComponent<KCTransform>()->setOrigin(Vec2f(PROJECTILE_RADIUS, PROJECTILE_RADIUS));
 	KAssetLoader& rAsset = KAssetLoader::getAssetLoader();
 
-	m_p8ballTexture = rAsset.loadTexture(KTEXT("asteroid.png"));
-	if (!m_p8ballTexture)
+	m_pProjectileTexture = rAsset.loadTexture(KTEXT("asteroid.png"));
+
+	if (!m_pProjectileTexture->generateMipmap())
+	{
+		KPrintf(KTEXT("Unable to generate mipmaps for projectile texture!\n"));
+	}
+	m_pProjectileTexture->setSmooth(true);
+	
+	if (!m_pProjectileTexture)
 	{
 		KPrintf(KTEXT("Missing asteroid texture for projectile!\n"));
 		return KInitStatus::MissingResource;
@@ -52,8 +59,15 @@ void Projectile::tick()
 
 void Projectile::onEnterScene()
 {
-	getEntity()->getComponent<KCSprite>()->setTexture(m_p8ballTexture);
-	getEntity()->getComponent<KCColliderBase>()->subscribeCollisionCallback(&m_collCallback);
+	getEntity()->getComponent<KCSprite>()->setTexture(m_pProjectileTexture);
+	KCColliderBase* pColliderBase = getEntity()->getComponent<KCColliderBase>();
+	pColliderBase->subscribeCollisionCallback(&m_collCallback);
+
+	KCColliderFilteringData filter;
+	filter.collisionFilter = 0x0012;
+	filter.collisionMask = 0x0011;
+
+	pColliderBase->setCollisionFilteringData(filter);
 }
 
 void Projectile::resetProjectile()
@@ -63,6 +77,7 @@ void Projectile::resetProjectile()
 	KCPhysicsBody* pPhysBody = getEntity()->getComponent<KCPhysicsBody>();
 	pPhysBody->setVelocity(Vec2f(0.0f, 0.0f));
 	pPhysBody->applyForce(-pPhysBody->getForce());
+
 }
 
 void Projectile::handleCollision(const Krawler::KCollisionDetectionData & data)
@@ -116,6 +131,7 @@ void ProjectileHandler::fireProjectile(const Vec2f& startPos, const Vec2f& direc
 		return;
 	}
 	pProjectile->setIsInUse(true);
+	pProjectile->getComponent<KCCircleCollider>()->getCentrePosition();
 	pProjectile->getComponent<KCTransform>()->setTranslation(startPos);
 	pProjectile->getComponent<KCPhysicsBody>()->applyForce(direction * KICKOFF_FORCE);
 }
@@ -124,7 +140,7 @@ KEntity* ProjectileHandler::getProjectileToFire()
 {
 	auto result = std::find_if(m_projectilesVec.begin(), m_projectilesVec.end(), [](KEntity* pEntity) -> bool
 	{
-		return !pEntity->isEntitiyInUse();
+		return !pEntity->isEntityInUse();
 	});
 
 	if (result == m_projectilesVec.end())

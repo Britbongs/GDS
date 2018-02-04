@@ -26,7 +26,7 @@ int main(void)
 	appInit.gameFps = 30;
 	appInit.physicsFps = 60;
 	appInit.windowTitle = KTEXT("GDS - Prototype");
-	appInit.windowStyle = KWindowStyle::Windowed_Resizeable;
+	appInit.windowStyle = KWindowStyle::Windowed_Fixed_Size;
 	StartupEngine(&appInit);
 
 	KApplication::getApp()->getSceneDirector().addScene(mainScene);

@@ -1,6 +1,6 @@
 #version 120
 #define PLANET_COUNT 4
-#define SCALE 70000
+#define SCALE 10000000
 
 uniform float maxG;
 uniform vec2 planetPos[PLANET_COUNT];
@@ -18,7 +18,7 @@ vec4 toRGB(int r, int g, int b)
 	return col;
 }
 
-const vec4 WEAK_GRAVITY_COL = vec4(0.0f,0.0f,0.0f,0.0f);
+const vec4 WEAK_GRAVITY_COL = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 void main()
 {
@@ -35,9 +35,11 @@ void main()
 		t[i] = 0.0f;
 		float r = distance(gl_Vertex.xy, planetPos[i]);
 		t[i] += (1.0f / (r*r));
-		t[i] = clamp(t[i], 0.0f, 1.0f);
 		t[i] *= SCALE;
 	}
+
+	//for (int i = 0; i < PLANET_COUNT; ++i)
+		//t[i] = clamp(t[i], 0.0f, 1.0f);
 
 	vec4 col;
 	for (int i = 0; i < PLANET_COUNT; ++i)
@@ -45,6 +47,7 @@ void main()
 		col += mix(WEAK_GRAVITY_COL, colours[i], t[i]);
 	}
 	vec4 normalizedColour = normalize(col);
-
-	gl_FrontColor = vec4(normalizedColour.x, normalizedColour.y, normalizedColour.z, 0.5f);
+	normalizedColour *= 2.0f;
+	//normalizedColour *= ;
+	gl_FrontColor = vec4(normalizedColour.x, normalizedColour.y, normalizedColour.z, 0.9f);
 }

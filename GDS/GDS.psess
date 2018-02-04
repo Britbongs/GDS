@@ -48,7 +48,7 @@
       <LaunchProject>true</LaunchProject>
       <OverrideProjectSettings>false</OverrideProjectSettings>
       <LaunchMethod>Executable</LaunchMethod>
-      <ExecutablePath>Release\GDS.exe</ExecutablePath>
+      <ExecutablePath>Debug\GDS.exe</ExecutablePath>
       <StartupDirectory>GDS\</StartupDirectory>
       <Arguments>
       </Arguments>
@@ -67,17 +67,6 @@
       <ProjName>GDS</ProjName>
     </ProjBinary>
   </Binaries>
-  <Reports>
-    <Report>
-      <Path>GDS180117.vspx</Path>
-    </Report>
-    <Report>
-      <Path>GDS180117(1).vspx</Path>
-    </Report>
-    <Report>
-      <Path>GDS180118.vspx</Path>
-    </Report>
-  </Reports>
   <Launches>
     <ProjBinary>
       <Path>:PB:{91F94C7E-C42A-40DA-889D-2573BBF42709}|GDS\GDS.vcxproj</Path>

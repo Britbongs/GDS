@@ -44,6 +44,8 @@ private:
 	Krawler::KEntity* m_extraPlanets[EXTRA_PLANET_COUNT];
 
 	sf::Texture* m_pPlanetTexture;
+	sf::Texture* m_pPlanetTexture2;
+
 	sf::Texture* m_p8BallTexture;
 	sf::Texture* m_pBackground;
 

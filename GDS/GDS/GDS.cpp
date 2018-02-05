@@ -42,8 +42,12 @@ int main(void)
 	pEntity->setEntityTag(KTEXT("level setup"));
 	pEntity->addComponent(new LevelSetup(pEntity));
 
-	InitialiseSubmodules();
-
+	const KInitStatus initResult = InitialiseSubmodules();
+	if (initResult != KInitStatus::Success)
+	{
+		system("pause");
+		return -1;
+	}
 	RunApplication();
 
 	ShutdownEngine();

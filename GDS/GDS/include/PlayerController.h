@@ -28,6 +28,8 @@ private:
 	const float ROTATION_AMOUNT;
 	void updateTranslation();
 
+	Krawler::KInitStatus setupArrow();
+
 	Krawler::Components::KCTransform* m_pTransformComponent;
 	Krawler::KInitStatus setupSatellite();
 
@@ -37,9 +39,14 @@ private:
 
 	sf::Texture* m_pTankTexture;
 	sf::Texture* m_pLauncherTexture;
+
 	Krawler::KEntity* m_pLauncher;
+	Krawler::KEntity* m_pArrowHead;
+	Krawler::KEntity* m_pArrowBody;
 
-
+	bool m_bSetDrawingArrow = false;
+	Krawler::Vec2f m_mousePosA;
+	Krawler::Vec2f m_mousePosB;
 };
 
 #endif 

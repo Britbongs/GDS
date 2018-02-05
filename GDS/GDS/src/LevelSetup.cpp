@@ -22,6 +22,7 @@ using namespace Krawler::Components;
 using namespace Krawler::TiledMap;
 
 #define GRID_NODE_SIZE 1
+#define PLANET_TEX_SIZE 64
 
 /*-- Level Setup --*/
 
@@ -80,7 +81,7 @@ void LevelSetup::onEnterScene()
 
 	auto sprite = m_pPlayerPlanet->getComponent<KCSprite>();
 	sprite->setTexture(m_pPlanetTexture);
-	sprite->setTextureRect(Recti(0, 0, 256, 256));
+	sprite->setTextureRect(Recti(0, 0, PLANET_TEX_SIZE, PLANET_TEX_SIZE));
 	KCColliderFilteringData filter;
 	filter.collisionFilter = 0x0010;
 	filter.collisionMask = 0x002;
@@ -203,9 +204,15 @@ KInitStatus LevelSetup::setupPlayerEntities()
 	//load texture for the planet and assign it to the member pointer to texture
 	KAssetLoader& assetLoader = KAssetLoader::getAssetLoader();
 	assetLoader.setRootFolder(KTEXT("res\\"));
-	m_pPlanetTexture = assetLoader.loadTexture(KTEXT("planet.png"));
+	m_pPlanetTexture = assetLoader.loadTexture(KTEXT("planet_1.png"));
+	m_pPlanetTexture2 = assetLoader.loadTexture(KTEXT("planet_2.png"));
 
 	if (!m_pPlanetTexture)
+	{
+		return KInitStatus::MissingResource;
+	}
+
+	if (!m_pPlanetTexture2)
 	{
 		return KInitStatus::MissingResource;
 	}
@@ -213,6 +220,11 @@ KInitStatus LevelSetup::setupPlayerEntities()
 	if (!m_pPlanetTexture->generateMipmap())
 	{
 		KPrintf(KTEXT("Unable to generate mipmap for planet texture!\n"));
+	}
+
+	if (!m_pPlanetTexture2->generateMipmap())
+	{
+		KPrintf(KTEXT("Unable to generate mipmap for planet texture2!\n"));
 	}
 
 	m_pPlanetTexture->setSmooth(true);
@@ -305,8 +317,8 @@ void LevelSetup::setupPlanetPositionsAndTextures()
 		pPlanet->getComponent<KCTransform>()->setTranslation(pos);
 		KCSprite* const pSprite = pPlanet->getComponent<KCSprite>();
 
-		pSprite->setTexture(m_pPlanetTexture);
-		pSprite->setTextureRect(Recti(256, 256, 256, 256));
+		pSprite->setTexture(m_pPlanetTexture2);
+		pSprite->setTextureRect(Recti(0, 0, PLANET_TEX_SIZE, PLANET_TEX_SIZE));
 
 		pPlanet->getComponent<KCColliderBase>()->setCollisionFilteringData(filter);
 	}
@@ -343,7 +355,7 @@ void LevelSetup::setupBackgroundTiledmap()
 	for (int i = 0; i < gridDim.x * gridDim.y; ++i)
 	{
 		tileIDsArray[i] = rand() % 2;
-	}
+}
 	m_backgroundTiledMap.setupTiledMapFromArray(tileIDs, gridDim, Vec2i(128, 128), Vec2i(256, 256));
 	m_backgroundTiledMap.setTexture(m_pBackground);
 

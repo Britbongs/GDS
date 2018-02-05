@@ -76,6 +76,8 @@ Krawler::KInitStatus PlayerController::init()
 	getEntity()->setEntityTag(KTEXT("player_tank"));
 	m_pLauncher->setEntityTag(KTEXT("player_launcher"));
 
+	KINIT_CHECK(setupArrow());
+
 	return Krawler::KInitStatus::Success;
 }
 
@@ -95,6 +97,19 @@ void PlayerController::onEnterScene()
 	m_pLauncher->getComponent<KCTransform>()->setTranslation(Vec2f(20.0f, 12.0f));
 	m_pLauncher->getComponent<KCSprite>()->setTexture(m_pLauncherTexture);
 	m_pLauncher->getComponent<KCSprite>()->setTextureRect(LauncherTexRect);
+
+	KAssetLoader& rAssetLoader = KAssetLoader::getAssetLoader();
+	sf::Texture* pTexHead = rAssetLoader.loadTexture(KTEXT("ArrowHead.png"));
+	sf::Texture* pTexBody = rAssetLoader.loadTexture(KTEXT("ArrowBody.png"));
+	m_pArrowHead->getComponent<KCSprite>()->setTexture(pTexHead);
+	m_pArrowHead->getComponent<KCSprite>()->setTextureRect(Recti(0, 0, 64, 64));
+	m_pArrowHead->getComponent<KCTransform>()->setOrigin(Vec2f(pTexHead->getSize().x / 1.5f, 0));
+
+	m_pArrowBody->getComponent<KCSprite>()->setTexture(pTexBody);
+	m_pArrowBody->getComponent<KCSprite>()->setTextureRect(Recti(0, 0, 32, 128));
+	m_pArrowBody->getComponent<KCTransform>()->setOrigin(Vec2f(pTexBody->getSize().x / 1.5f, 0));
+	m_pArrowBody->getComponent<KCTransform>()->setParent(m_pArrowHead);
+	m_pArrowBody->getComponent<KCTransform>()->setTranslation(32, 8);
 
 	KCHECK(m_pProjectileHandler);
 }
@@ -141,6 +156,33 @@ void PlayerController::tick()
 		launchDirection = RotateVector(Vec2f(0, -1), m_pLauncher->getComponent<KCTransform>()->getRotation());
 		m_pProjectileHandler->fireProjectile(pLauncherTransform->getPosition(), launchDirection);
 	}
+
+	if (KInput::MouseJustPressed(KMouseButton::Left))
+	{
+		if (!m_bSetDrawingArrow)
+		{
+			m_bSetDrawingArrow = true;
+			m_mousePosA = KInput::GetMouseWorldPosition();
+		}
+	}
+
+	if (KInput::MousePressed(KMouseButton::Left))
+	{
+		if (m_bSetDrawingArrow)
+		{
+			m_mousePosB = KInput::GetMouseWorldPosition();
+			float angleInRad = GetAngleBetween(m_mousePosA, m_mousePosB);
+			angleInRad = Maths::Degrees(-angleInRad);
+			m_pArrowHead->getComponent<KCTransform>()->setRotation(angleInRad);
+		}
+	}
+
+	if (KInput::MouseJustReleased(KMouseButton::Left))
+	{
+		m_bSetDrawingArrow = false;
+	}
+
+	m_pArrowHead->getComponent<KCTransform>()->setTranslation(KInput::GetMouseWorldPosition());
 }
 
 void PlayerController::fixedTick()
@@ -154,6 +196,45 @@ void PlayerController::updateTranslation()
 	trans.x = cosf(Maths::Radians(m_rotationAngleDegrees))* (PLANET_RADIUS + m_orbitDistance);
 	trans.y = sinf(Maths::Radians(m_rotationAngleDegrees))* (PLANET_RADIUS + m_orbitDistance);
 	m_pTransformComponent->setTranslation(PLANET_CENTRE_POS + trans);
+}
+
+KInitStatus PlayerController::setupArrow()
+{
+	KScene* pCurrentScene = KApplication::getApp()->getCurrentScene();
+	KCHECK(pCurrentScene);
+
+	m_pArrowHead = pCurrentScene->addEntityToScene();
+	m_pArrowBody = pCurrentScene->addEntityToScene();
+
+	KCHECK(m_pArrowHead);
+	KCHECK(m_pArrowBody);
+
+	if (!m_pArrowHead)
+	{
+		return KInitStatus::Nullptr;
+	}
+
+	if (!m_pArrowBody)
+	{
+		return KInitStatus::Nullptr;
+	}
+
+	sf::Texture* pTexHead = KAssetLoader::getAssetLoader().loadTexture(KTEXT("ArrowHead.png"));
+	sf::Texture* pTexBody = KAssetLoader::getAssetLoader().loadTexture(KTEXT("ArrowBody.png"));
+	if (!pTexHead)
+	{
+		return KInitStatus::MissingResource;
+	}
+
+	if (!pTexBody)
+	{
+		return KInitStatus::MissingResource;
+	}
+
+	m_pArrowHead->addComponent(new KCSprite(m_pArrowHead, Vec2f(pTexHead->getSize()) / 1.5f));
+	m_pArrowBody->addComponent(new KCSprite(m_pArrowBody, Vec2f(pTexBody->getSize()) / 1.5f));
+
+	return KInitStatus::Success;
 }
 
 KInitStatus PlayerController::setupSatellite()

@@ -26,7 +26,9 @@ private:
 	const Krawler::Vec2f PLANET_CENTRE_POS;
 
 	const float ROTATION_AMOUNT;
+
 	void updateTranslation();
+	void powerMeterUpdate();
 
 	Krawler::KInitStatus setupArrow();
 
@@ -39,14 +41,17 @@ private:
 
 	sf::Texture* m_pTankTexture;
 	sf::Texture* m_pLauncherTexture;
+	sf::Texture* m_pPowerMeterTexture;
 
 	Krawler::KEntity* m_pLauncher;
-	Krawler::KEntity* m_pArrowHead;
-	Krawler::KEntity* m_pArrowBody;
+	Krawler::KEntity* m_pPowerMeter;
 
 	bool m_bSetDrawingArrow = false;
 	Krawler::Vec2f m_mousePosA;
 	Krawler::Vec2f m_mousePosB;
+
+	float m_powerMeterValue = 0.0f;
+	float m_spamTimer = 0.0f;
 };
 
 #endif 

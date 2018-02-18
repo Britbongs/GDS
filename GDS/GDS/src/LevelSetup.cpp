@@ -77,8 +77,6 @@ KInitStatus LevelSetup::init()
 
 void LevelSetup::onEnterScene()
 {
-	KScene* pCurrentScene = KApplication::getApp()->getCurrentScene();
-
 	auto sprite = m_pPlayerPlanet->getComponent<KCSprite>();
 	sprite->setTexture(m_pPlanetTexture);
 	sprite->setTextureRect(Recti(0, 0, PLANET_TEX_SIZE, PLANET_TEX_SIZE));
@@ -98,7 +96,7 @@ void LevelSetup::onEnterScene()
 	filter.collisionMask = 0x0011;
 	m_pCollisionTest->getComponent<KCColliderBase>()->setCollisionFilteringData(filter);
 	m_pCollisionTest->getComponent<KCSprite>()->setTexture(m_pPlanetTexture);
-	m_pCollisionTest->getComponent<KCSprite>()->setTextureRect(Recti(0, 0, 256, 256));
+	m_pCollisionTest->getComponent<KCSprite>()->setTextureRect(Recti(0, 0, PLANET_TEX_SIZE, PLANET_TEX_SIZE));
 	m_pCollisionTest->setEntityTag(KTEXT("test"));
 #endif
 

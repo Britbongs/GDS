@@ -98,19 +98,8 @@ void PlayerController::onEnterScene()
 	m_pLauncher->getComponent<KCSprite>()->setTexture(m_pLauncherTexture);
 	m_pLauncher->getComponent<KCSprite>()->setTextureRect(LauncherTexRect);
 
-	KAssetLoader& rAssetLoader = KAssetLoader::getAssetLoader();
-	sf::Texture* pTexHead = rAssetLoader.loadTexture(KTEXT("ArrowHead.png"));
-	sf::Texture* pTexBody = rAssetLoader.loadTexture(KTEXT("ArrowBody.png"));
-	m_pArrowHead->getComponent<KCSprite>()->setTexture(pTexHead);
-	m_pArrowHead->getComponent<KCSprite>()->setTextureRect(Recti(0, 0, 64, 64));
-	m_pArrowHead->getComponent<KCTransform>()->setOrigin(Vec2f(pTexHead->getSize().x / 1.5f, 0));
-
-	m_pArrowBody->getComponent<KCSprite>()->setTexture(pTexBody);
-	m_pArrowBody->getComponent<KCSprite>()->setTextureRect(Recti(0, 0, 32, 128));
-	m_pArrowBody->getComponent<KCTransform>()->setOrigin(Vec2f(pTexBody->getSize().x / 1.5f, 0));
-	m_pArrowBody->getComponent<KCTransform>()->setParent(m_pArrowHead);
-	m_pArrowBody->getComponent<KCTransform>()->setTranslation(32, 8);
-
+	m_pPowerMeter->getComponent<KCSprite>()->setTexture(m_pPowerMeterTexture);
+	m_pPowerMeter->getComponent<KCSprite>()->setTextureRect(Recti(0, 0, 64, 64));
 	KCHECK(m_pProjectileHandler);
 }
 
@@ -136,13 +125,17 @@ void PlayerController::tick()
 	if (KInput::Pressed(KKey::A))
 	{
 		if (launcherRotationIndependantOfParentTransform > -90.0f)
+		{
 			m_pLauncher->getComponent<KCTransform>()->rotate(-ROTATION_AMOUNT*dt);
+		}
 	}
 
 	if (KInput::Pressed(KKey::D))
 	{
 		if (launcherRotationIndependantOfParentTransform < 90.0f)
+		{
 			pLauncherTransform->rotate(ROTATION_AMOUNT*dt);
+		}
 	}
 
 	m_rotationAngleDegrees += rot * dt;
@@ -150,12 +143,31 @@ void PlayerController::tick()
 
 	updateTranslation();
 
+	static bool spaceJustPressed = false;
+
 	if (KInput::JustPressed(KKey::Space))
 	{
-		Vec2f launchDirection;
-		launchDirection = RotateVector(Vec2f(0, -1), m_pLauncher->getComponent<KCTransform>()->getRotation());
-		m_pProjectileHandler->fireProjectile(pLauncherTransform->getPosition(), launchDirection);
+		if (!spaceJustPressed)
+		{
+			Vec2f launchDirection;
+			launchDirection = RotateVector(Vec2f(0, -1), m_pLauncher->getComponent<KCTransform>()->getRotation());
+			m_pProjectileHandler->fireProjectile(pLauncherTransform->getPosition(), launchDirection);
+			spaceJustPressed = true;
+		}
 	}
+	else
+	{
+		if (m_spamTimer < 1.5f)
+		{
+			m_spamTimer += dt;
+		}
+		else
+		{
+			spaceJustPressed = false;
+			m_spamTimer = 0.0f;
+		}
+	}
+
 
 	if (KInput::MouseJustPressed(KMouseButton::Left))
 	{
@@ -165,24 +177,6 @@ void PlayerController::tick()
 			m_mousePosA = KInput::GetMouseWorldPosition();
 		}
 	}
-
-	if (KInput::MousePressed(KMouseButton::Left))
-	{
-		if (m_bSetDrawingArrow)
-		{
-			m_mousePosB = KInput::GetMouseWorldPosition();
-			float angleInRad = GetAngleBetween(m_mousePosA, m_mousePosB);
-			angleInRad = Maths::Degrees(-angleInRad);
-			m_pArrowHead->getComponent<KCTransform>()->setRotation(angleInRad);
-		}
-	}
-
-	if (KInput::MouseJustReleased(KMouseButton::Left))
-	{
-		m_bSetDrawingArrow = false;
-	}
-
-	m_pArrowHead->getComponent<KCTransform>()->setTranslation(KInput::GetMouseWorldPosition());
 }
 
 void PlayerController::fixedTick()
@@ -198,41 +192,28 @@ void PlayerController::updateTranslation()
 	m_pTransformComponent->setTranslation(PLANET_CENTRE_POS + trans);
 }
 
+void PlayerController::powerMeterUpdate()
+{
+}
+
 KInitStatus PlayerController::setupArrow()
 {
 	KScene* pCurrentScene = KApplication::getApp()->getCurrentScene();
 	KCHECK(pCurrentScene);
 
-	m_pArrowHead = pCurrentScene->addEntityToScene();
-	m_pArrowBody = pCurrentScene->addEntityToScene();
-
-	KCHECK(m_pArrowHead);
-	KCHECK(m_pArrowBody);
-
-	if (!m_pArrowHead)
+	m_pPowerMeter = pCurrentScene->addEntityToScene();
+	KCHECK(m_pPowerMeter);
+	if (!m_pPowerMeter)
 	{
 		return KInitStatus::Nullptr;
 	}
 
-	if (!m_pArrowBody)
-	{
-		return KInitStatus::Nullptr;
-	}
-
-	sf::Texture* pTexHead = KAssetLoader::getAssetLoader().loadTexture(KTEXT("ArrowHead.png"));
-	sf::Texture* pTexBody = KAssetLoader::getAssetLoader().loadTexture(KTEXT("ArrowBody.png"));
-	if (!pTexHead)
+	m_pPowerMeterTexture = KAssetLoader::getAssetLoader().loadTexture(KTEXT("Powermeter.png"));
+	if (!m_pPowerMeterTexture)
 	{
 		return KInitStatus::MissingResource;
 	}
-
-	if (!pTexBody)
-	{
-		return KInitStatus::MissingResource;
-	}
-
-	m_pArrowHead->addComponent(new KCSprite(m_pArrowHead, Vec2f(pTexHead->getSize()) / 1.5f));
-	m_pArrowBody->addComponent(new KCSprite(m_pArrowBody, Vec2f(pTexBody->getSize()) / 1.5f));
+	m_pPowerMeter->addComponent(new KCSprite(m_pPowerMeter, Vec2f(m_pPowerMeterTexture->getSize()) * 1.5f));
 
 	return KInitStatus::Success;
 }

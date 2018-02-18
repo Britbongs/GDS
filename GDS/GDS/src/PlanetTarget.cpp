@@ -5,7 +5,7 @@
 #include <AssetLoader\KAssetLoader.h>
 
 #include <Components\KCSprite.h>
-#include <Components\KCBoxCollider.h>
+#include <Components\KCOrientedBoxCollider.h>
 
 using namespace Krawler;
 using namespace Krawler::Components;
@@ -36,7 +36,7 @@ Krawler::KInitStatus PlanetTarget::init()
 	pTransform->setOrigin(TARGET_SIZE / 2.0f, TARGET_SIZE / 2.0f);
 	pTransform->move(PLANET_RADIUS, PLANET_RADIUS);
 	pEntity->addComponent(new KCSprite(getEntity(), Vec2f(TARGET_SIZE, TARGET_SIZE)));
-	pEntity->addComponent(new KCBoxCollider(getEntity(), Vec2f(TARGET_SIZE, TARGET_SIZE)));
+	pEntity->addComponent(new KCOrientedBoxCollider(getEntity(), Vec2f(TARGET_SIZE, TARGET_SIZE)));
 
 	m_pTargetTexture = KAssetLoader::getAssetLoader().loadTexture(KTEXT("city.png"));
 	m_pTargetTexture->setSmooth(true);

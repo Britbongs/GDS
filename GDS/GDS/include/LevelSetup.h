@@ -28,7 +28,6 @@ public:
 
 private:
 
-
 	Krawler::KInitStatus setupPlayerEntities();
 	Krawler::KInitStatus addProjectiles();
 	Krawler::KInitStatus createExtraPlanets();

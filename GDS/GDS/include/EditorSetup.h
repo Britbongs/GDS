@@ -6,6 +6,9 @@
 #include <SFML\Graphics\Texture.hpp>
 
 #define MAX_PLANETS_PER_LEVEL 6
+#define MAX_TARGETS_PER_LEVEL MAX_PLANETS_PER_LEVEL * 3
+
+
 
 class EditorSetup : public Krawler::KComponentBase
 {
@@ -20,9 +23,20 @@ public:
 
 private:
 
-	Krawler::KInitStatus setupInLevelPlanetsArray();
+	enum EntityPlacingType
+	{
+		ExtraPlanets,
+		Targets,
+		PlayerPlanet
+	};
 
+	Krawler::KInitStatus setupInLevelPlanetsArray();
+	Krawler::KInitStatus setupPlayerPlanet();
+	
 	void updateInUseEntities();
+	void updateByPlacingType();
+	
+	void switchPlacingType(EntityPlacingType type);
 
 	struct InLevelPlanet
 	{
@@ -31,10 +45,14 @@ private:
 	};
 
 	InLevelPlanet m_inLevelPlanets[MAX_PLANETS_PER_LEVEL];
+	InLevelPlanet m_playerPlanet; 
 
-	sf::Texture* m_pPlanetTexture;
+	sf::Texture* m_pPlanetTexture = nullptr;
+	sf::Texture* m_pPlayerPlanetTexture = nullptr;
 	Krawler::int32 m_nextAvailablePlanetIdx = 0;
 
+
+	EntityPlacingType m_placingType = EntityPlacingType::ExtraPlanets;
 };
 
 #endif 

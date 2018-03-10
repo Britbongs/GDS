@@ -24,6 +24,7 @@ KInitStatus EditorSetup::init()
 {
 	KAssetLoader::getAssetLoader().setRootFolder(KTEXT("res\\"));
 	KINIT_CHECK(setupInLevelPlanetsArray());
+	KINIT_CHECK(setupPlayerPlanet());
 
 	return KInitStatus::Success;
 }
@@ -34,16 +35,38 @@ void EditorSetup::onEnterScene()
 	{
 		iLP.pPlanet->getComponent<KCSprite>()->setTexture(m_pPlanetTexture);
 	}
+	m_playerPlanet.pPlanet->getComponent<KCSprite>()->setTexture(m_pPlayerPlanetTexture);
+
 }
 
 void EditorSetup::tick()
 {
 	updateInUseEntities();
-	if (KInput::MouseJustPressed(KMouseButton::Left) && m_nextAvailablePlanetIdx < MAX_PLANETS_PER_LEVEL)
+	updateByPlacingType();
+
+	if (KInput::JustPressed(KKey::P)) // player
 	{
-		m_inLevelPlanets[m_nextAvailablePlanetIdx].bPlacedInScene = true;
-		m_inLevelPlanets[m_nextAvailablePlanetIdx].pPlanet->getComponent<KCTransform>()->setTranslation(KInput::GetMouseWorldPosition());
-		++m_nextAvailablePlanetIdx;
+		switchPlacingType(PlayerPlanet);
+	}
+
+	if (KInput::JustPressed(KKey::E)) // extra planets
+	{
+		switchPlacingType(ExtraPlanets);
+	}
+
+	//if (KInput::JustPressed(KKey::T)) // Targets 
+	//{
+	//	switchPlacingType(ExtraPlanets);
+	//}
+
+	//clear all planets
+	if (KInput::JustPressed(KKey::C))
+	{
+		for (auto& data : m_inLevelPlanets)
+			data.bPlacedInScene = false;
+		m_playerPlanet.bPlacedInScene = false;
+
+		m_nextAvailablePlanetIdx = 0;
 	}
 }
 
@@ -82,14 +105,109 @@ KInitStatus EditorSetup::setupInLevelPlanetsArray()
 	return KInitStatus::Success;
 }
 
+KInitStatus EditorSetup::setupPlayerPlanet()
+{
+	KApplication* const pApp = KApplication::getApp();
+
+	m_playerPlanet.pPlanet = pApp->getCurrentScene()->addEntityToScene();
+
+	KCHECK(m_playerPlanet.pPlanet);
+
+	if (!m_playerPlanet.pPlanet)
+	{
+		KPrintf(KTEXT("Error:\n Unable to create entity for player planet in editorsetup!\n"));
+		return KInitStatus::Nullptr;
+	}
+
+	m_playerPlanet.pPlanet->addComponent(new KCSprite(m_playerPlanet.pPlanet, Vec2f(PLANET_RADIUS * 2.0f, PLANET_RADIUS * 2.0f)));
+	m_playerPlanet.pPlanet->getComponent<KCTransform>()->setOrigin(Vec2f(PLANET_RADIUS, PLANET_RADIUS));
+
+	m_pPlayerPlanetTexture = KAssetLoader::getAssetLoader().loadTexture(KTEXT("planet_2.png"));
+
+	if (!m_pPlanetTexture)
+	{
+		KPrintf(KTEXT("Error!:\n Unable to load player planet texture in EditorSetup"));
+		return KInitStatus::MissingResource;
+	}
+	return KInitStatus::Success;
+}
+
 void EditorSetup::updateInUseEntities()
 {
+	if (m_playerPlanet.bPlacedInScene && !m_playerPlanet.pPlanet->isEntityInUse())
+	{
+		m_playerPlanet.pPlanet->setIsInUse(true);
+	}
+	else if (!m_playerPlanet.bPlacedInScene && m_playerPlanet.pPlanet->isEntityInUse())
+	{
+		m_playerPlanet.pPlanet->setIsInUse(false);
+	}
+
 	for (auto& inLvlPlnt : m_inLevelPlanets)
 	{
 		if (inLvlPlnt.bPlacedInScene && !inLvlPlnt.pPlanet->isEntityInUse())
 		{
 			inLvlPlnt.pPlanet->setIsInUse(true);
 		}
+		else if (!inLvlPlnt.bPlacedInScene && inLvlPlnt.pPlanet->isEntityInUse())
+		{
+			inLvlPlnt.pPlanet->setIsInUse(false);
+		}
 	}
 }
+
+void EditorSetup::updateByPlacingType()
+{
+	switch (m_placingType)
+	{
+	case EntityPlacingType::ExtraPlanets:
+	{
+		if (KInput::MouseJustPressed(KMouseButton::Left) && m_nextAvailablePlanetIdx < MAX_PLANETS_PER_LEVEL)
+		{
+			m_inLevelPlanets[m_nextAvailablePlanetIdx].bPlacedInScene = true;
+			m_inLevelPlanets[m_nextAvailablePlanetIdx].pPlanet->getComponent<KCTransform>()->setTranslation(KInput::GetMouseWorldPosition());
+			++m_nextAvailablePlanetIdx;
+		}
+
+		if (KInput::Pressed(KKey::LControl) && KInput::JustPressed(KKey::Z))
+		{
+			if (m_nextAvailablePlanetIdx > 0)
+			{
+				--m_nextAvailablePlanetIdx;
+				m_inLevelPlanets[m_nextAvailablePlanetIdx].bPlacedInScene = false;
+			}
+		}
+	}
+	break;
+
+
+	case EntityPlacingType::PlayerPlanet:
+	{
+		if (KInput::MouseJustPressed(KMouseButton::Left))
+		{
+			m_playerPlanet.bPlacedInScene = true;
+			m_playerPlanet.pPlanet->getComponent<KCTransform>()->setTranslation(KInput::GetMouseWorldPosition());
+		}
+
+		if (KInput::Pressed(KKey::LControl) && KInput::JustPressed(KKey::Z))
+		{
+			m_playerPlanet.bPlacedInScene = false;
+		}
+
+	}
+	break;
+
+	}
+}
+
+void EditorSetup::switchPlacingType(EntityPlacingType type)
+{
+	switch (type)
+	{
+
+	}
+
+	m_placingType = type;
+}
+
 

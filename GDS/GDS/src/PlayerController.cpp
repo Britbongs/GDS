@@ -31,7 +31,7 @@ Krawler::KInitStatus PlayerController::init()
 	m_pTransformComponent = getEntity()->getComponent<KCTransform>();
 	if (!m_pTransformComponent)
 	{
-		KPrintf(KTEXT("No transform component attatched to %ws"), getEntity()->getEntityTag() + KTEXT("\n"));
+		KPrintf(KTEXT("No transform component attatched to %ws\n"), getEntity()->getEntityTag().c_str());
 	}
 	KINIT_CHECK(setupSatellite());
 	m_pTransformComponent->setOrigin(SATELLITE_WIDTH / 2.0f, SATELLITE_HEIGHT / 2.0f);
@@ -194,29 +194,35 @@ void PlayerController::tick()
 
 	updateTranslation();
 
-	static bool spaceJustPressed = false;
+	static bool bJustFired = false;
+	static bool bSpaceJustReleased = false;
+
+	if (KInput::JustReleased(KKey::Space))
+	{
+		bSpaceJustReleased = true;
+	}
 
 	if (KInput::JustPressed(KKey::Space))
 	{
-		if (!spaceJustPressed)
+		if (!bJustFired)
 		{
 			Vec2f launchDirection;
 			launchDirection = RotateVector(Vec2f(0, -1), pLauncherTransform->getRotation());
 			m_pProjectileHandler->fireProjectileWithForce(pLauncherTransform->getPosition(), launchDirection, m_shotPowerValue);
-			spaceJustPressed = true;
+			bJustFired = true;
 		}
 	}
-	else
+
+	if (bSpaceJustReleased && m_spamTimer < 1.5f)
 	{
-		if (m_spamTimer < 1.5f)
-		{
-			m_spamTimer += dt;
-		}
-		else
-		{
-			spaceJustPressed = false;
-			m_spamTimer = 0.0f;
-		}
+		m_spamTimer += dt;
+	}
+	else if (bJustFired && bSpaceJustReleased)
+	{
+		bJustFired = false;
+		bSpaceJustReleased = false;
+
+		m_spamTimer = 0.0f;
 	}
 }
 

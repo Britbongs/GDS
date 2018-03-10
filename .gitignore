@@ -11,3 +11,6 @@ RC/
 *.~
 *.un~
 *.dll
+*.db-shm
+*.db-wal
+*.ipch

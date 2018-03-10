@@ -2,7 +2,6 @@
 #define PLAYER_CONTROLLER_H
 
 #include <KComponent.h>
-
 #include <Components\KCTransform.h>
 
 #include "Projectiles.h"
@@ -26,7 +25,11 @@ private:
 	const Krawler::Vec2f PLANET_CENTRE_POS;
 
 	const float ROTATION_AMOUNT;
+
 	void updateTranslation();
+	void powerMeterUpdate();
+
+	Krawler::KInitStatus setupPowermeter();
 
 	Krawler::Components::KCTransform* m_pTransformComponent;
 	Krawler::KInitStatus setupSatellite();
@@ -37,8 +40,15 @@ private:
 
 	sf::Texture* m_pTankTexture;
 	sf::Texture* m_pLauncherTexture;
-	Krawler::KEntity* m_pLauncher;
+	sf::Texture* m_pPowerMeterTexture;
+	sf::Texture* m_pValueBarTexture;
 
+	Krawler::KEntity* m_pLauncher;
+	Krawler::KEntity* m_pPowerMeter; // actual triangle 
+	Krawler::KEntity* m_pValueBar; //  yellow bar across power meter
+
+	float m_shotPowerValue = 0.5f;
+	float m_spamTimer = 0.0f;
 
 };
 

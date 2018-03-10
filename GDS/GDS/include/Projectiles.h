@@ -30,7 +30,7 @@ public:
 private:
 
 	void handleCollision(const Krawler::KCollisionDetectionData& data);
-	
+
 	sf::Texture* m_pProjectileTexture;
 	float m_aliveTime = 0.0f;
 
@@ -51,8 +51,8 @@ public:
 	virtual void onEnterScene() override;
 	virtual void tick() override;
 
-	void fireProjectile(const Krawler::Vec2f& startPos, const Krawler::Vec2f& direction);
-
+	void KDEPRECATED(fireProjectile)(const Krawler::Vec2f& startPos, const Krawler::Vec2f& direction);
+	void fireProjectileWithForce(const Krawler::Vec2f& startPos, const Krawler::Vec2f& direction, float percentageOfMaxForce);
 private:
 
 	Krawler::KEntity* getProjectileToFire();

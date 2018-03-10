@@ -4,12 +4,18 @@
 #include <stdexcept>
 
 #include "GameBlackboard.h"
+
+#define EDITOR_ENABLED
+
+#ifndef EDITOR_ENABLED
 #include "LevelSetup.h"
+#else
+#include "EditorSetup.h"
+#endif 
 
 using namespace std;
 
 using namespace Krawler;
-
 
 #ifndef _DEBUG
 #include <Windows.h>
@@ -18,8 +24,11 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
 int main(void)
 #endif
 {
+#ifndef EDITOR_ENABLED
 	KScene* mainScene = new KScene(KTEXT("play scene"), SCENE_BOUNDS);
-
+#else
+	KScene* mainScene = new KScene(KTEXT("edit scene"), SCENE_BOUNDS);
+#endif
 	KApplicationInitialise appInit(false);
 	appInit.width = 1024;
 	appInit.height = 576;
@@ -30,7 +39,11 @@ int main(void)
 	StartupEngine(&appInit);
 
 	KApplication::getApp()->getSceneDirector().addScene(mainScene);
+#ifndef EDITOR_ENABLED
 	KApplication::getApp()->getSceneDirector().setCurrentScene(KTEXT("play scene"));
+#else
+	KApplication::getApp()->getSceneDirector().setCurrentScene(KTEXT("edit scene"));
+#endif
 
 	KEntity* const pEntity = mainScene->addEntityToScene();
 	if (!pEntity)
@@ -40,8 +53,11 @@ int main(void)
 	}
 
 	pEntity->setEntityTag(KTEXT("level setup"));
+#ifndef EDITOR_ENABLED
 	pEntity->addComponent(new LevelSetup(pEntity));
-
+#else
+	pEntity->addComponent(new EditorSetup(pEntity));
+#endif
 	const KInitStatus initResult = InitialiseSubmodules();
 	if (initResult != KInitStatus::Success)
 	{

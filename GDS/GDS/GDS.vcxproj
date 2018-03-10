@@ -127,6 +127,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GDS.cpp" />
+    <ClCompile Include="src\EditorSetup.cpp" />
     <ClCompile Include="src\PlanetTarget.cpp" />
     <ClCompile Include="src\GravitationalController.cpp" />
     <ClCompile Include="src\LevelSetup.cpp" />
@@ -134,6 +135,7 @@
     <ClCompile Include="src\Projectiles.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\EditorSetup.h" />
     <ClInclude Include="include\GameBlackboard.h" />
     <ClInclude Include="include\GravitationalController.h" />
     <ClInclude Include="include\LevelSetup.h" />

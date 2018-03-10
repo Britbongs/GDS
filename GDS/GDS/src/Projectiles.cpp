@@ -37,7 +37,7 @@ KInitStatus Projectile::init()
 		KPrintf(KTEXT("Unable to generate mipmaps for projectile texture!\n"));
 	}
 	m_pProjectileTexture->setSmooth(true);
-	
+
 	if (!m_pProjectileTexture)
 	{
 		KPrintf(KTEXT("Missing asteroid texture for projectile!\n"));
@@ -121,6 +121,19 @@ void ProjectileHandler::onEnterScene()
 
 void ProjectileHandler::tick()
 {
+}
+
+void ProjectileHandler::fireProjectileWithForce(const Krawler::Vec2f & startPos, const Krawler::Vec2f & direction, float percentageOfMaxForce)
+{
+	KEntity* pProjectile = getProjectileToFire();
+	if (pProjectile == nullptr)
+	{
+		return;
+	}
+
+	pProjectile->setIsInUse(true);
+	pProjectile->getComponent<KCTransform>()->setTranslation(startPos);
+	pProjectile->getComponent<KCPhysicsBody>()->applyForce(direction * (KICKOFF_FORCE * (0.5f + percentageOfMaxForce)));
 }
 
 void ProjectileHandler::fireProjectile(const Vec2f& startPos, const Vec2f& direction)

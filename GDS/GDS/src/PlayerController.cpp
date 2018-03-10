@@ -1,6 +1,6 @@
 #include "PlayerController.h"
 
-#include "Components\KCSprite.h"
+#include <Components\KCSprite.h>
 
 #include <Input\KInput.h>
 #include <KApplication.h>
@@ -16,9 +16,12 @@ using namespace Krawler::Components;
 #define CANNON_WIDTH 16
 #define CANNON_HEIGHT 32
 
+#define POWER_METER_SIZE 64.0f
+
 PlayerController::PlayerController(KEntity* pEntity, const Vec2f& planetCentrePos, float playerPlanetRadius)
 	: KComponentBase(pEntity), PLANET_CENTRE_POS(planetCentrePos), PLANET_RADIUS(playerPlanetRadius), ROTATION_AMOUNT(60.0f),
-	m_orbitDistance(30.0f), m_rotationAngleDegrees(-90), m_pLauncher(nullptr), m_pLauncherTexture(nullptr)
+	m_orbitDistance(30.0f), m_rotationAngleDegrees(-90), m_pLauncher(nullptr), m_pLauncherTexture(nullptr),
+	m_pValueBar(nullptr)
 {
 	setComponentTag(KTEXT("player controller"));
 }
@@ -76,7 +79,7 @@ Krawler::KInitStatus PlayerController::init()
 	getEntity()->setEntityTag(KTEXT("player_tank"));
 	m_pLauncher->setEntityTag(KTEXT("player_launcher"));
 
-	KINIT_CHECK(setupArrow());
+	KINIT_CHECK(setupPowermeter());
 
 	return Krawler::KInitStatus::Success;
 }
@@ -84,22 +87,51 @@ Krawler::KInitStatus PlayerController::init()
 void PlayerController::onEnterScene()
 {
 	KScene* const pCurrentScene = KApplication::getApp()->getCurrentScene();
-	KEntity* pLevelSetup = pCurrentScene->findEntityByTag(KTEXT("level setup"));
+	KEntity* const pLevelSetup = pCurrentScene->findEntityByTag(KTEXT("level setup"));
+
 	m_pProjectileHandler = pLevelSetup->getComponent<ProjectileHandler>();
 
 	const Recti TankTexRect(0, 0, m_pTankTexture->getSize().x, m_pTankTexture->getSize().y);
 	const Recti LauncherTexRect(0, 0, m_pLauncherTexture->getSize().x, m_pLauncherTexture->getSize().y);
 
-	getEntity()->getComponent<KCSprite>()->setTexture(m_pTankTexture);
-	getEntity()->getComponent<KCSprite>()->setTextureRect(TankTexRect);
+	{ // Satellite/Tank (parentEntity)
+		KCSprite* const pSpriteComponent = getEntity()->getComponent<KCSprite>();
 
-	m_pLauncher->getComponent<KCTransform>()->setParent(getEntity());
-	m_pLauncher->getComponent<KCTransform>()->setTranslation(Vec2f(20.0f, 12.0f));
-	m_pLauncher->getComponent<KCSprite>()->setTexture(m_pLauncherTexture);
-	m_pLauncher->getComponent<KCSprite>()->setTextureRect(LauncherTexRect);
+		pSpriteComponent->setTexture(m_pTankTexture);
+		pSpriteComponent->setTextureRect(TankTexRect);
+	}
 
-	m_pPowerMeter->getComponent<KCSprite>()->setTexture(m_pPowerMeterTexture);
-	m_pPowerMeter->getComponent<KCSprite>()->setTextureRect(Recti(0, 0, 64, 64));
+	{ // Launcher
+		KCTransform* const pLauncherTransform = m_pLauncher->getComponent<KCTransform>();
+		KCSprite* const pLauncherSprite = m_pLauncher->getComponent<KCSprite>();
+
+		pLauncherTransform->setParent(getEntity());
+		pLauncherTransform->setTranslation(Vec2f(20.0f, 12.0f));
+
+		pLauncherSprite->setTexture(m_pLauncherTexture);
+		pLauncherSprite->setTextureRect(LauncherTexRect);
+	}
+
+	{// Power Meter 
+
+		KCSprite* const pPowerMeterSprite = m_pPowerMeter->getComponent<KCSprite>();
+		KCTransform* const pPowerMeterTransform = m_pPowerMeter->getComponent<KCTransform>();
+		pPowerMeterSprite->setTexture(m_pPowerMeterTexture);
+
+		m_pPowerMeter->getComponent<KCTransform>()->setOrigin(POWER_METER_SIZE / 2.0f, POWER_METER_SIZE / 2.0f);
+		const Vec2f WindowSizeFloat = Vec2f(KApplication::getApp()->getWindowSize());
+		pPowerMeterTransform->setTranslation(WindowSizeFloat - Vec2f(32.0f, (WindowSizeFloat.y - POWER_METER_SIZE)));
+
+		KCSprite* const pValueBarSprite = m_pValueBar->getComponent<KCSprite>();
+		KCTransform* const pValueBarTransform = m_pValueBar->getComponent<KCTransform>();
+		KCHECK(pValueBarSprite);
+		KCHECK(pValueBarTransform);
+
+		pValueBarSprite->setTexture(m_pValueBarTexture);
+		pValueBarTransform->setTranslation(Vec2f(0.0f, POWER_METER_SIZE * m_shotPowerValue));
+
+	}
+
 	KCHECK(m_pProjectileHandler);
 }
 
@@ -126,9 +158,28 @@ void PlayerController::tick()
 	{
 		if (launcherRotationIndependantOfParentTransform > -90.0f)
 		{
-			m_pLauncher->getComponent<KCTransform>()->rotate(-ROTATION_AMOUNT*dt);
+			pLauncherTransform->rotate(-ROTATION_AMOUNT * dt);
 		}
 	}
+
+	KCSprite* pPowerMeterSprite = m_pPowerMeter->getComponent<KCSprite>();
+	KCTransform* pPowerMeterTransform = m_pPowerMeter->getComponent<KCTransform>();
+	KCTransform* pValueBarTransform = m_pValueBar->getComponent<KCTransform>();
+
+	pValueBarTransform->setTranslation(Vec2f(0.0f, POWER_METER_SIZE * (1.0f - m_shotPowerValue)));
+
+	if (KInput::JustPressed(KKey::Up))
+	{
+		// up shot power
+		m_shotPowerValue += 0.1f;
+	}
+
+	if (KInput::JustPressed(KKey::Down))
+	{
+		m_shotPowerValue -= 0.1f;
+	}
+
+	m_shotPowerValue = Maths::Clamp(0.0f, 1.0f, m_shotPowerValue);
 
 	if (KInput::Pressed(KKey::D))
 	{
@@ -150,8 +201,8 @@ void PlayerController::tick()
 		if (!spaceJustPressed)
 		{
 			Vec2f launchDirection;
-			launchDirection = RotateVector(Vec2f(0, -1), m_pLauncher->getComponent<KCTransform>()->getRotation());
-			m_pProjectileHandler->fireProjectile(pLauncherTransform->getPosition(), launchDirection);
+			launchDirection = RotateVector(Vec2f(0, -1), pLauncherTransform->getRotation());
+			m_pProjectileHandler->fireProjectileWithForce(pLauncherTransform->getPosition(), launchDirection, m_shotPowerValue);
 			spaceJustPressed = true;
 		}
 	}
@@ -165,16 +216,6 @@ void PlayerController::tick()
 		{
 			spaceJustPressed = false;
 			m_spamTimer = 0.0f;
-		}
-	}
-
-
-	if (KInput::MouseJustPressed(KMouseButton::Left))
-	{
-		if (!m_bSetDrawingArrow)
-		{
-			m_bSetDrawingArrow = true;
-			m_mousePosA = KInput::GetMouseWorldPosition();
 		}
 	}
 }
@@ -196,7 +237,7 @@ void PlayerController::powerMeterUpdate()
 {
 }
 
-KInitStatus PlayerController::setupArrow()
+KInitStatus PlayerController::setupPowermeter()
 {
 	KScene* pCurrentScene = KApplication::getApp()->getCurrentScene();
 	KCHECK(pCurrentScene);
@@ -213,7 +254,26 @@ KInitStatus PlayerController::setupArrow()
 	{
 		return KInitStatus::MissingResource;
 	}
-	m_pPowerMeter->addComponent(new KCSprite(m_pPowerMeter, Vec2f(m_pPowerMeterTexture->getSize()) * 1.5f));
+	m_pPowerMeter->addComponent(new KCSprite(m_pPowerMeter, Vec2f(m_pPowerMeterTexture->getSize())));
+
+
+	m_pValueBar = pCurrentScene->addEntityToScene();
+	KCHECK(pCurrentScene);
+
+	if (!m_pValueBar)
+	{
+		return KInitStatus::Nullptr;
+	}
+
+	m_pValueBarTexture = KAssetLoader::getAssetLoader().loadTexture(KTEXT("power_meter_value_bar.png"));
+
+	if (!m_pValueBarTexture)
+	{
+		return KInitStatus::MissingResource;
+	}
+
+	m_pValueBar->addComponent(new KCSprite(m_pValueBar, Vec2f(m_pValueBarTexture->getSize())));
+	m_pValueBar->getComponent<KCTransform>()->setParent(m_pPowerMeter);
 
 	return KInitStatus::Success;
 }

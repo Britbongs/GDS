@@ -17,6 +17,7 @@ public:
 
 	virtual void fixedTick() override;
 	void setPositionToMaintain(const Krawler::Vec2f& vec) { m_positionToMaintain = vec; }
+
 private:
 
 	Krawler::Vec2f m_positionToMaintain;

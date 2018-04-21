@@ -138,6 +138,7 @@
     <ClInclude Include="include\EditorSetup.h" />
     <ClInclude Include="include\GameBlackboard.h" />
     <ClInclude Include="include\GravitationalController.h" />
+    <ClInclude Include="include\LevelData.h" />
     <ClInclude Include="include\LevelSetup.h" />
     <ClInclude Include="include\PlanetTarget.h" />
     <ClInclude Include="include\PlayerController.h" />

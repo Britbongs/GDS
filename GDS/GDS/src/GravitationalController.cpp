@@ -70,7 +70,7 @@ void GravitationalController::fixedTick()
 			Vec2f directionAtoB = centrePosB - centrePosA;
 			directionAtoB *= metresToPixels;
 
-			float force = GRAVITATIONAL_CONSTANT*massA * massB / GetSquareLength(directionAtoB);
+			float force = GRAVITATIONAL_CONSTANT * massA * massB / GetSquareLength(directionAtoB);
 			force *= GRATIVTY_BALANCE;
 
 			directionAtoB = Normalise(directionAtoB);
@@ -78,7 +78,6 @@ void GravitationalController::fixedTick()
 
 			pPhysA->applyForce(directionAtoB);
 			pPhysB->applyForce(-directionAtoB);
-
 		}
 	}
 }
@@ -87,7 +86,8 @@ void GravitationalController::assembleList()
 {
 	auto pCurrentScene = KApplication::getApp()->getCurrentScene();
 	m_gravityInteractingEntities.clear();
-	KEntity* pEntityList = pCurrentScene->getEntityList();
+	KEntity* const pEntityList = pCurrentScene->getEntityList();
+
 	for (int32 i = 0; i < (signed)pCurrentScene->getNumbrOfEntitiesAllocated(); ++i)
 	{
 		KEntity* pEntity = &pEntityList[i];
@@ -96,7 +96,7 @@ void GravitationalController::assembleList()
 			continue;
 		}
 
-		KCPhysicsBody* pPhys = pEntity->getComponent<KCPhysicsBody>();
+		KCPhysicsBody* const pPhys = pEntity->getComponent<KCPhysicsBody>();
 
 		if (!pPhys)
 		{
